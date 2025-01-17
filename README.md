@@ -61,7 +61,7 @@ AddaGU (আড্ডাGU) is a social media application designed exclusively fo
 ### Steps
 1. Clone the repository:
    ```bash
-   git clone https://github.com/your-username/AddaGU.git
+   git clone https://github.com/Bishal1234-ui/AddaGU.git
    cd AddaGU
    ```
 
@@ -81,7 +81,7 @@ AddaGU (আড্ডাGU) is a social media application designed exclusively fo
    python manage.py migrate
    ```
 
-5. Run the development server:
+5. Run the development server ( in asgi ) :
    ```bash
    daphne -p 8000 GUBlogs.asgi:application
    ```
@@ -90,9 +90,6 @@ AddaGU (আড্ডাGU) is a social media application designed exclusively fo
    Open your web browser and navigate to `http://127.0.0.1:8000/`.
 
 
-## License
-This project is licensed under the MIT License. See the `LICENSE` file for details.
 
----
 
 
