@@ -1,0 +1,80 @@
+{% extends 'base.html' %}
+{% block title %}Sign Up{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <div class="text-center mb-4">
+            <h1 class="display-4 text-primary">Welcome to Gauhati University Blog</h1>
+            <p class="lead">Join us and share your thoughts with the community!</p>
+        </div>
+        <div class="row justify-content-center">
+            <div class="col-md-6">
+                <div class="card shadow-sm">
+                    <div class="card-body">
+                        <h2 class="card-title text-center">Sign Up</h2>
+                        <form method="post" enctype="multipart/form-data">
+                            {% csrf_token %}
+                            {{ form.non_field_errors }}
+                            <div class="form-group mb-3">
+                                {{ form.username.label_tag }}
+                                {{ form.username }}
+                                {% if form.username.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.username.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                {{ form.email.label_tag }}
+                                {{ form.email }}
+                                {% if form.email.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.email.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                {{ form.password1.label_tag }}
+                                {{ form.password1 }}
+                                {% if form.password1.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.password1.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                {{ form.password2.label_tag }}
+                                {{ form.password2 }}
+                                {% if form.password2.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.password2.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                {{ form.bio.label_tag }}
+                                {{ form.bio }}
+                                {% if form.bio.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.bio.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="form-group mb-3">
+                                {{ form.profile_picture.label_tag }}
+                                {{ form.profile_picture }}
+                                {% if form.profile_picture.errors %}
+                                    <div class="invalid-feedback">
+                                        {{ form.profile_picture.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            <div class="text-center">
+                                <button type="submit" class="btn btn-primary btn-lg btn-block">Sign Up</button>
+                            </div>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

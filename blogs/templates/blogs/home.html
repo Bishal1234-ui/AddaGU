@@ -1,0 +1,21 @@
+{% extends 'base.html' %}
+{% block title %}Home{% endblock %}
+{% block content %}
+    <div class="container mt-5">
+        <h2 class="text-center mb-4">Blog Posts</h2>
+        <div class="row">
+            {% for post in posts %}
+                <div class="col-md-6 mb-4">
+                    <div class="card h-100" style="background-color: #004d4d;">
+                        <div class="card-body text-light">
+                            <h4 class="card-title font-weight-bold">{{ post.title }}</h4>
+                            <p class="card-text">{{ post.content }}</p>
+                            <p class="card-text"><small>Written by {{ post.author }}</small></p>
+                            <a href="{% url 'blog_detail' post.pk %}" class="btn btn-light">Read More</a>
+                        </div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+    </div>
+{% endblock %}

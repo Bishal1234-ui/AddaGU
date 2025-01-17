@@ -1,0 +1,256 @@
+{% extends 'base.html' %}
+{% block title %}{{ post.title }}{% endblock %}
+{% block content %}
+<div class="container mt-5">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <div class="card">
+                <div class="card-header text-light text-center" style="background-color: #004d4d;">
+                    <h2 class="card-title">{{ post.title }}</h2>
+                </div>
+                <div class="card-body" style="background-color: #8ef6f692;">
+                    <p class="card-text">{{ post.content }}</p>
+                    <p class="card-text text-muted">By {{ post.author }} on {{ post.created_at|date:"F d, Y" }}</p>
+                </div>
+                <div>
+                    {% if post.blogimage %}
+                    <img src="{{ post.blogimage.url }}" alt="{{ post.title }}" class="img-fluid mb-3">
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4">
+    <div class="row justify-content-center">
+        <div class="col-md-8">
+            <h3>Comments</h3>
+            <ul id="comments-list" class="list-group">
+                {% for comment in comments %}
+                <li class="list-group-item d-flex justify-content-between align-items-center" id="comment-{{ comment.id }}">
+                    <div>
+                        <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at }}):</p>
+                        <p>{{ comment.text }}</p>
+                    </div>
+                    {% if comment.author == user %}
+                    <button class="btn btn-danger btn-sm delete-comment-btn" data-comment-id="{{ comment.id }}">
+                        <i class="fas fa-trash-alt"></i> <!-- FontAwesome Trash Icon -->
+                    </button>
+                    {% endif %}
+                </li>
+                {% endfor %}
+            </ul>
+            <hr>
+            <button id="add-comment-btn" class="btn btn-primary mb-3">Add Comment</button>
+            <div id="comment-form" class="card p-3" style="display: none;">
+                <form id="comment-form-element" method="post">
+                    {% csrf_token %}
+                    <div class="form-group">
+                        <label for="commentText">Comment:</label>
+                        <textarea id="commentText" name="text" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary">Submit</button>
+                </form>
+            </div>
+        </div>
+    </div>
+</div>
+
+<div class="container mt-4 text-center">
+    <button id="like-btn" class="btn btn-outline-none" data-liked="{{ liked }}" data-url="{% url 'toggle_like' post.pk %}" data-post-id="{{ post.pk }}">
+        <span id="like-icon" style="font-size: 2rem;">{% if liked %}❤️{% else %}💛{% endif %}</span>
+    </button>
+    <span id="like-count" class="ml-2">
+        <i class="fas fa-heart"></i>
+        <span id="like-count-number">{{ post.likes.count }}</span>
+    </span>
+    <button id="view-likes-btn" class="btn btn-info ml-2">View Likes</button>
+</div>
+
+<div id="likes-popup" class="p-3 border rounded bg-light" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white;">
+    <h3>Liked by:</h3>
+    <ul class="list-group">
+        {% for like in likes %}
+        <li class="list-group-item">{{ like.user.username }}</li>
+        {% endfor %}
+    </ul>
+    <button id="close-likes-popup" class="btn btn-secondary mt-2">Close</button>
+</div>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        // Get postId for likes and comments from the same data attribute
+        const postId = '{{ post.pk }}';
+        console.log('Post ID:', postId);  // Debugging
+
+        // WebSocket protocol based on the current protocol
+        const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+
+        // Handle like button click
+        function getCookie(name) {
+            let cookieValue = null;
+            if (document.cookie && document.cookie !== '') {
+                const cookies = document.cookie.split(';');
+                for (let i = 0; i < cookies.length; i++) {
+                    const cookie = cookies[i].trim();
+                    if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                        cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                        break;
+                    }
+                }
+            }
+            return cookieValue;
+        }
+
+        const csrftoken = getCookie('csrftoken');
+
+        document.getElementById('like-btn').addEventListener('click', function() {
+            const btn = this;
+            const url = btn.getAttribute('data-url');
+            const liked = btn.getAttribute('data-liked') === 'true';
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': csrftoken
+                },
+                body: JSON.stringify({})
+            }).then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                if (data.liked) {
+                    document.getElementById('like-icon').textContent = '❤️';
+                    btn.setAttribute('data-liked', 'true');
+                } else {
+                    document.getElementById('like-icon').textContent = '💛';
+                    btn.setAttribute('data-liked', 'false');
+                }
+                document.getElementById('like-count-number').textContent = data.likes_count;
+            }).catch(error => {
+                console.error('Fetch error:', error);
+            });
+        });
+
+        // Show likes popup
+        document.getElementById('view-likes-btn').addEventListener('click', function() {
+            document.getElementById('likes-popup').style.display = 'block';
+        });
+
+        // Close likes popup
+        document.getElementById('close-likes-popup').addEventListener('click', function() {
+            document.getElementById('likes-popup').style.display = 'none';
+        });
+
+        // Connect to the WebSocket for Likes
+        const likeSocket = new WebSocket(
+            wsProtocol + window.location.host + '/ws/like/' + postId + '/'
+        );
+
+        likeSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const likesCount = data.likes_count;
+            document.getElementById('like-count-number').textContent = likesCount;
+        };
+
+        likeSocket.onclose = function(e) {
+            console.error('WebSocket closed unexpectedly');
+        };
+
+        // Toggle the comment form display
+        document.getElementById('add-comment-btn').addEventListener('click', function() {
+            document.getElementById('comment-form').style.display = 'block';
+            this.style.display = 'none';
+        });
+
+        // Connect to the WebSocket for Comments
+        const commentSocket = new WebSocket(
+            wsProtocol + window.location.host + '/ws/comment/' + postId + '/'
+        );
+
+        commentSocket.onmessage = function(e) {
+            const data = JSON.parse(e.data);
+            const comment = data.comment;
+            const username = data.username;
+            const created_at = data.created_at;
+
+            // Add the new comment to the comments list
+            const commentsList = document.getElementById('comments-list');
+            const newComment = document.createElement('li');
+            newComment.classList.add('list-group-item');
+            newComment.innerHTML = `<p><strong>${username}</strong> (${created_at}):</p><p>${comment}</p>`;
+            commentsList.appendChild(newComment);
+        };
+
+        commentSocket.onclose = function(e) {
+            console.error('WebSocket closed unexpectedly');
+        };
+
+        // Handle new comment submission
+        document.getElementById('comment-form-element').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent default form submission
+
+            const commentText = document.getElementById('commentText').value;
+            const url = this.action;
+
+            console.log("Submitting comment to URL:", url);  // Debugging
+            console.log("Comment text:", commentText);  // Debugging
+
+            // Use FormData to handle the request payload
+            const formData = new FormData();
+            formData.append('text', commentText);
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': csrftoken
+                },
+                body: formData
+            }).then(response => {
+                console.log("Response status:", response.status);  // Debugging
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            }).then(data => {
+                console.log("Response data:", data);  // Debugging
+                // Clear the comment input
+                document.getElementById('commentText').value = '';
+
+                // The WebSocket message will handle updating the comment list
+            }).catch(error => {
+                console.error('Fetch error:', error);
+            });
+        });
+
+        // Handle delete comment
+        document.querySelectorAll('.delete-comment-btn').forEach(button => {
+            button.addEventListener('click', function() {
+                const commentId = this.getAttribute('data-comment-id');
+                const deleteUrl = `{% url 'delete_comment' 0 %}`.replace('0', commentId);
+
+                fetch(deleteUrl, {
+                    method: 'DELETE',
+                    headers: {
+                        'X-CSRFToken': csrftoken
+                    }
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                }).then(data => {
+                    if (data.success) {
+                        document.getElementById(`comment-${commentId}`).remove();
+                    }
+                }).catch(error => {
+                    console.error('Fetch error:', error);
+                });
+            });
+        });
+    });
+</script>
+{% endblock %}

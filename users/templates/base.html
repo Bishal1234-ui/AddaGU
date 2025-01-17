@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <title>{% block title %}My Blog{% endblock %}</title>
+    {% load bootstrap5 %}
+    {% bootstrap_css %}
+    <head>
+        <!-- FontAwesome CDN -->
+        <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css">
+    </head>
+    
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-dark" style="background-color: #004d4d;">
+        <div class="container-fluid">
+            <a class="navbar-brand" href="{% url 'home' %}">Gauhati University Blog</a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}">Home</a>
+                    </li>
+                    {% if user.is_authenticated %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'profile' %}">Profile</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'create_post' %}">Post</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'logout' %}">Logout</a>
+                        </li> 
+                        <li>
+                            <a class="nav-link" href="{% url 'profile' %}">
+                                {% if user.profile_picture %}
+                                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle" width="30" height="30">
+                                {% else %}
+                                    <img src="https://via.placeholder.com/30" alt="Profile Picture" class="rounded-circle">
+                                {% endif %}
+                            </a>
+                        </li>
+                    {% else %}
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'signup' %}">Sign Up</a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link" href="{% url 'login' %}">Login</a>
+                        </li>
+                    {% endif %}
+                </ul>
+            </div>
+        </div>
+    </nav>
+    <div class="container">
+        {% block content %}{% endblock %}
+    </div>
+    {% bootstrap_javascript %}
+</body>
+</html>
