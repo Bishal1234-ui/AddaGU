@@ -10,7 +10,7 @@
                 </div>
                 <div class="card-body" style="background-color: #8ef6f692;">
                     <p class="card-text">{{ post.content }}</p>
-                    <p class="card-text text-muted">By {{ post.author }} on {{ post.created_at|date:"F d, Y" }}</p>
+                    <p class="card-text text-muted">By <a href="{% url 'user_profile' post.author.username %}">{{ post.author }} </a> on {{ post.created_at|date:"F d, Y" }}</p>
                 </div>
                 <div>
                     {% if post.blogimage %}
