@@ -29,9 +29,9 @@ SECRET_KEY = "django-insecure-*jf67p6i+6w)*23-+$q61(s!3p&_monrs448*w!9ipox(8c2@w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['9c74-2405-201-a80a-1069-80b1-446-4aa6-d872.ngrok-free.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['8dfd-2405-201-a80a-1069-dd92-4b41-14d3-9189.ngrok-free.app', 'localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = ['https://9c74-2405-201-a80a-1069-80b1-446-4aa6-d872.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://8dfd-2405-201-a80a-1069-dd92-4b41-14d3-9189.ngrok-free.app']
 
 # Application definition
 
@@ -63,6 +63,7 @@ MIDDLEWARE = [
     "django.contrib.auth.middleware.AuthenticationMiddleware",
     "django.contrib.messages.middleware.MessageMiddleware",
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
+    'whitenoise.middleware.WhiteNoiseMiddleware',
 ]
 
 ROOT_URLCONF = "GUBlogs.urls"
@@ -132,7 +133,10 @@ USE_TZ = True
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.2/howto/static-files/
 
-STATIC_URL = "static/"
+STATIC_URL = "/static/"
+STATICFILES_DIRS = [BASE_DIR / "static",]
+STATIC_ROOT = BASE_DIR / 'staticfiles'
+
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field

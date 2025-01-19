@@ -8,9 +8,19 @@ from django.http import JsonResponse, HttpResponse
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+# @login_required
 def home_view(request):
     posts = BlogPost.objects.all()
-    return render(request, 'blogs/home.html', {'posts':posts})
+    liked_posts = []
+    if request.user.is_authenticated:
+        liked_posts = Like.objects.filter(user=request.user).values_list('blog_post_id', flat=True)
+
+    for post in posts:
+        post.liked = post.pk in liked_posts
+    return render(request, 'blogs/home.html', {
+        'posts': posts,
+        
+    })
 
 
 # toggle the like
@@ -19,7 +29,6 @@ def toggle_like(request, pk):
     blog_post = get_object_or_404(BlogPost,pk=pk)
     user = request.user
     liked  = False
-
     # 1. Attempts to get an existing Like object for the combination of 
     # blog_post and user. If it doesn't exist, it creates a new one.
     # 2. 'created' is a boolean that is True if a new Like was created, 

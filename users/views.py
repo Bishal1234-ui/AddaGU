@@ -7,7 +7,7 @@ from .models import CustomUser
 # we need blog post to get the blog of a specific user
 from blogs.models import BlogPost
 from django.contrib.auth.decorators import login_required
-from django.http import JsonResponse
+from django.http import JsonResponse, HttpResponse
 
 
 def signup_view(request):
@@ -105,3 +105,12 @@ def following_list_view(request, username):
     following = user.following.all()
     following_data = [{'username': follow.username, 'profile_picture': follow.profile_picture.url if follow.profile_picture else None} for follow in following]
     return JsonResponse({'following': following_data})
+
+@login_required
+def delete_post_view(request, pk):
+    post = get_object_or_404(BlogPost, pk=pk)
+    if request.user == post.author:
+        post.delete()
+        return redirect('profile')
+    else:
+        return HttpResponse("You are not allowed to delete this post.")

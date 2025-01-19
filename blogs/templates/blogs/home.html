@@ -1,21 +1,141 @@
 {% extends 'base.html' %}
 {% block title %}Home{% endblock %}
 {% block content %}
-    <div class="container mt-5">
-        <h2 class="text-center mb-4">Blog Posts</h2>
-        <div class="row">
-            {% for post in posts %}
-                <div class="col-md-6 mb-4">
-                    <div class="card h-100" style="background-color: #004d4d;">
-                        <div class="card-body text-light">
-                            <h4 class="card-title font-weight-bold">{{ post.title }}</h4>
-                            <p class="card-text">{{ post.content }}</p>
-                            <p class="card-text"><small>Written by {{ post.author }}</small></p>
-                            <a href="{% url 'blog_detail' post.pk %}" class="btn btn-light">Read More</a>
-                        </div>
-                    </div>
+<div class="container" style="text-align: center;">
+    <div class="row" style="margin: 15px;padding: 10px;">
+        {% for post in posts %}
+        <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 col-xxl-6"
+            style="margin: 0px;max-width: 100%;margin-bottom: 10px;margin-top: 9px;margin-right: 0px;border: 4px solid var(--bs-body-bg) ;">
+            <div class="row"
+                style="text-align: center;background: linear-gradient(94deg, #4a1ec8 0%, rgb(134,81,247) 51%, #46a6ff 100%), rgb(236,12,255);">
+                <div class="col-2 col-lg-2 col-xl-1 col-xxl-1"
+                    style="margin-top: 11px;margin-bottom: 4px;text-align: left;">
+                    {% if post.author.profile_picture %}
+                    <img class="rounded-circle" src="{{ post.author.profile_picture.url }}" width="42" height="41">
+                    {% else %}
+                    <img class="rounded-circle" src="" width="42" height="41">
+                    {% endif %}
                 </div>
-            {% endfor %}
+                <div class="col-6" style="margin-top: 11px;margin-bottom: 4px;text-align: left;">
+                    <p class="text-start" style="margin-top: 6px;color: rgb(248,248,248);">{{ post.author }}</p>
+                </div>
+            </div>
+            <div class="row" style="text-align: center;">
+                <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 col-xxl-12">
+                    {% if post.blogimage %}
+                    <img class="object-fit-contain" alt="{{ post.title }}" src="{{ post.blogimage.url }}" width="284" height="440" style="text-align: center;">
+                    {% else %}
+                    <img class="object-fit-contain" alt="" src="" width="284" height="440" style="text-align: center;">
+                    {% endif %}
+                </div>
+            </div>
+            <div class="row" style="text-align: center;">
+                <div class="col" style="margin-top: 11px;margin-bottom: 4px;">
+                    <p style="font-weight: bold;">{{ post.title }}</p>
+                </div>
+            </div>
+            <div class="row"
+                style="background: linear-gradient(123deg, #5a2cd5, rgb(132,79,245) 48%, #49a3ff), var(--bs-primary);">
+                <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6">
+                    <button id="like-btn-{{ post.pk }}" class="btn btn-primary" type="button" data-liked="{{ post.liked }}" data-url="{% url 'toggle_like' post.pk %}" data-post-id="{{ post.pk }}"
+                        style="background: rgba(253,85,13,0);border-style: none;width: 100px;height: 100%;">
+                        <small style="color: var(--bs-light);font-weight: bold;margin-right: 0px;font-size: 15px;" id="like-count-number-{{ post.pk }}">{{ post.likes.count }}</small>
+                        <span id="like-icon-{{ post.pk }}" style="font-size: 1.5rem;">{% if post.liked %}❤️{% else %}💛{% endif %}</span>
+                    </button>
+                    
+                </div>
+                
+                <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-6 col-xxl-6">
+                    <button class="btn btn-primary" type="button"
+                    style="background: rgb(255,255,255);border-style: none;width: 100px;height: 40px;margin-top: 4px;margin-bottom: 4px;">
+                    <a href="{% url 'blog_detail' post.pk %}">
+                    <small
+                        style="color: var(--bs-dark);font-weight: bold;margin-right: 0px;font-size: 13px;">
+                        See
+                        Post
+                    </small></a>
+                    </button>
+                </div>
+            </div>
         </div>
+        {% endfor %}
     </div>
+</div>
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const likeButtons = document.querySelectorAll('[id^="like-btn-"]');
+
+        likeButtons.forEach(button => {
+            const postId = button.getAttribute('data-post-id');
+            const liked = button.getAttribute('data-liked') === 'true';
+            const likeIcon = document.getElementById(`like-icon-${postId}`);
+            const likeCount = document.getElementById(`like-count-number-${postId}`);
+
+            // Set the initial state of the like icon
+           
+
+            button.addEventListener('click', function() {
+                const btn = this;
+                const url = btn.getAttribute('data-url');
+                const liked = btn.getAttribute('data-liked') === 'true';
+
+                fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'X-CSRFToken': getCookie('csrftoken')
+                    },
+                    body: JSON.stringify({})
+                }).then(response => {
+                    if (!response.ok) {
+                        throw new Error('Network response was not ok');
+                    }
+                    return response.json();
+                }).then(data => {
+                    if (data.liked) {
+                        likeIcon.textContent = '❤️';
+                        btn.setAttribute('data-liked', 'true');
+                    } else {
+                        likeIcon.textContent = '💛';
+                        btn.setAttribute('data-liked', 'false');
+                    }
+                    likeCount.textContent = data.likes_count;
+                }).catch(error => {
+                    console.error('Fetch error:', error);
+                });
+
+                // WebSocket connection for real-time like count updates
+                const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
+                const likeSocket = new WebSocket(
+                    wsProtocol + window.location.host + '/ws/like/' + postId + '/'
+                );
+
+                likeSocket.onmessage = function(e) {
+                    const data = JSON.parse(e.data);
+                    const likesCount = data.likes_count;
+                    likeCount.textContent = likesCount;
+                };
+
+                likeSocket.onclose = function(e) {
+                    console.error('WebSocket closed unexpectedly');
+                };
+            });
+        });
+    });
+
+    function getCookie(name) {
+        let cookieValue = null;
+        if (document.cookie && document.cookie !== '') {
+            const cookies = document.cookie.split(';');
+            for (let i = 0; i < cookies.length; i++) {
+                const cookie = cookies[i].trim();
+                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                    break;
+                }
+            }
+        }
+        return cookieValue;
+    }
+</script>
 {% endblock %}

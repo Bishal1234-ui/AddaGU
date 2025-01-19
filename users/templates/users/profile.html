@@ -1,42 +1,46 @@
+<!-- users/templates/users/profile.html -->
 {% extends 'base.html' %}
 {% load static %}
 {% block title %}Profile{% endblock %}
 {% block content %}
 <a href="{% url 'edit_profile' %}" class="btn btn-secondary mt-3">Edit Profile</a>
-    <div class="container mt-5" >
-        <div class="row" style="background-color: #8ef6f692; padding: 20px;">
-            <div class="col-md-3 text-center">
-                {% if user.profile_picture %}
-                    <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px;">
-                {% else %}
-                    <img src="{% static 'path/to/default_profile_picture.jpg' %}" alt="Default Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px;">
-                {% endif %}
-            </div>
-            <div class="col-md-9">
-                <h2>{{ user.username }}</h2>
-                <p><strong>Email:</strong> {{ user.email }}</p>
-                <p><strong>Bio:</strong> {{ user.bio }}</p>
-                <p><strong>Followers:</strong> <a href="#" id="followers-link">{{ user.followers.count }}</a></p>
-                <p><strong>Following:</strong> <a href="#" id="following-link">{{ user.following.count }}</a></p>
-            </div>
+<div class="container mt-5">
+    <div class="row" style="background-color: #8ef6f692; padding: 20px;">
+        <div class="col-md-3 text-center">
+            {% if user.profile_picture %}
+                <img src="{{ user.profile_picture.url }}" alt="Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px;">
+            {% else %}
+                <img src="{% static 'path/to/default_profile_picture.jpg' %}" alt="Default Profile Picture" class="rounded-circle img-fluid" style="width: 150px; height: 150px;">
+            {% endif %}
         </div>
-
-        <div class="mt-5">
-            <h3 class="text-center">My Posts</h3>
-            <div class="list-group">
-                {% for post in user_posts %}
-                    <a href="{% url 'blog_detail' post.pk %}" class="list-group-item list-group-item-action">
-                        <div class="d-flex w-100 justify-content-between">
-                            <h5 class="mb-1">{{ post.title }}</h5>
-                            <small>{{ post.created_at }}</small>
-                        </div>
-                        <p class="mb-1">{{ post.excerpt }}</p>
-                    </a>
-                {% endfor %}
-            </div>
+        <div class="col-md-9">
+            <h2>{{ user.username }}</h2>
+            <p><strong>Email:</strong> {{ user.email }}</p>
+            <p><strong>Bio:</strong> {{ user.bio }}</p>
+            <p><strong>Followers:</strong> <a href="#" id="followers-link">{{ user.followers.count }}</a></p>
+            <p><strong>Following:</strong> <a href="#" id="following-link">{{ user.following.count }}</a></p>
         </div>
     </div>
 
+    <div class="mt-5">
+        <h3 class="text-center">My Posts</h3>
+        <div class="list-group">
+            {% for post in user_posts %}
+                <a href="{% url 'blog_detail' post.pk %}" class="list-group-item list-group-item-action">
+                    <div class="d-flex w-100 justify-content-between">
+                        <h5 class="mb-1">{{ post.title }}</h5>
+                        <small>{{ post.created_at }}</small>
+                    </div>
+                    <p class="mb-1">{{ post.excerpt }}</p>
+                </a>
+                <form method="post" action="{% url 'delete_post' post.pk %}">
+                    {% csrf_token %}
+                    <button type="submit" class="btn btn-danger mt-2">Delete</button>
+                </form>
+            {% endfor %}
+        </div>
+    </div>
+</div>
 
 <!-- Followers and Following Popup -->
 <div id="popup" class="p-3 border rounded bg-light" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white;">
@@ -67,7 +71,6 @@
         closeBtn.addEventListener('click', function() {
             popup.style.display = 'none';
         });
-
         window.addEventListener('click', function(event) {
             if (event.target === popup) {
                 popup.style.display = 'none';

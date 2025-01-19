@@ -11,5 +11,6 @@ urlpatterns = [
     path('profile/<str:username>/follow_unfollow/', views.follow_unfollow_view, name='follow_unfollow'),
     path('profile/<str:username>/followers/', views.followers_list_view, name='followers_list'),
     path('profile/<str:username>/following/', views.following_list_view, name='following_list'),
+    path('delete_post/<int:pk>/', views.delete_post_view, name='delete_post'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]
