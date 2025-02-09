@@ -46,7 +46,10 @@ INSTALLED_APPS = [
     "blogs",
     'bootstrap5',
     'channels',
+    'crispy_forms',
+    'crispy_bootstrap5',
 ]
+CRISPY_TEMPLATE_PACK = 'bootstrap5'
 ASGI_APPLICATION = 'GUBlogs.asgi.application'
 
 CHANNEL_LAYERS = {
