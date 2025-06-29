@@ -190,7 +190,7 @@
             {% for msg in messages %}
                 <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
                     <div class="message-content">
-                        {{ msg.message }}
+                        {{ msg.message|safe }}
                         <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
                     </div>
                 </div>

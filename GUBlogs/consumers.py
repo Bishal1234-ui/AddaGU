@@ -164,9 +164,12 @@ class ChatConsumer(AsyncWebsocketConsumer):
         User = get_user_model()
         sender = User.objects.get(username=sender_username)
         receiver = User.objects.get(username=receiver_username)
-        ChatMessage.objects.create(
+        
+        # Create chat message with encryption
+        chat_message = ChatMessage(
             sender=sender,
-            receiver=receiver,
-            message=message
+            receiver=receiver
         )
+        chat_message.set_message(message)  # This will encrypt the message
+        chat_message.save()
 

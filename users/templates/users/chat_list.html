@@ -1,0 +1,276 @@
+{% extends 'base.html' %}
+{% block title %}Messages{% endblock %}
+{% block content %}
+
+<style>
+    /* Chat List Styles */
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .chat-header {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        padding: 2rem;
+        margin-bottom: 2rem;
+        text-align: center;
+    }
+    
+    .chat-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0 0 1rem 0;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .chat-subtitle {
+        color: #718096;
+        font-size: 1.1rem;
+    }
+    
+    .conversations-section {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .conversation-item {
+        display: flex;
+        align-items: center;
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f7fafc;
+        text-decoration: none;
+        color: inherit;
+        transition: all 0.3s ease;
+        position: relative;
+    }
+    
+    .conversation-item:hover {
+        background: #f8fafc;
+        text-decoration: none;
+        color: inherit;
+        transform: translateX(5px);
+    }
+    
+    .conversation-item:last-child {
+        border-bottom: none;
+    }
+    
+    .user-avatar-large {
+        width: 60px;
+        height: 60px;
+        border-radius: 50%;
+        object-fit: cover;
+        margin-right: 1rem;
+        border: 3px solid #e2e8f0;
+        transition: border-color 0.3s ease;
+    }
+    
+    .conversation-item:hover .user-avatar-large {
+        border-color: #667eea;
+    }
+    
+    .conversation-content {
+        flex-grow: 1;
+        min-width: 0;
+    }
+    
+    .conversation-header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .username {
+        font-weight: 600;
+        color: #2d3748;
+        font-size: 1.1rem;
+    }
+    
+    .timestamp {
+        font-size: 0.85rem;
+        color: #a0aec0;
+    }
+    
+    .latest-message {
+        color: #4a5568;
+        margin: 0;
+        font-size: 0.95rem;
+        overflow: hidden;
+        text-overflow: ellipsis;
+        white-space: nowrap;
+    }
+    
+    .unread-badge {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border-radius: 20px;
+        padding: 0.25rem 0.75rem;
+        font-size: 0.8rem;
+        font-weight: 600;
+        margin-left: 1rem;
+        min-width: 24px;
+        text-align: center;
+    }
+    
+    .empty-state {
+        text-align: center;
+        padding: 4rem 2rem;
+        color: #718096;
+    }
+    
+    .empty-state-icon {
+        font-size: 4rem;
+        margin-bottom: 1.5rem;
+        opacity: 0.5;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        -webkit-background-clip: text;
+        -webkit-text-fill-color: transparent;
+        background-clip: text;
+    }
+    
+    .empty-state h3 {
+        color: #2d3748;
+        margin-bottom: 1rem;
+    }
+    
+    .empty-state p {
+        margin-bottom: 2rem;
+        font-size: 1.1rem;
+    }
+    
+    .start-chat-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        border: none;
+        padding: 1rem 2rem;
+        border-radius: 25px;
+        font-weight: 600;
+        text-decoration: none;
+        transition: all 0.3s ease;
+        display: inline-block;
+    }
+    
+    .start-chat-btn:hover {
+        color: white;
+        text-decoration: none;
+        transform: translateY(-2px);
+        box-shadow: 0 8px 25px rgba(102, 126, 234, 0.4);
+    }
+    
+    .message-preview {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+    
+    .message-status {
+        font-size: 0.8rem;
+        color: #a0aec0;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .chat-container {
+            padding: 1rem 0.5rem;
+        }
+        
+        .chat-title {
+            font-size: 2rem;
+        }
+        
+        .conversation-item {
+            padding: 1rem 1.5rem;
+        }
+        
+        .user-avatar-large {
+            width: 50px;
+            height: 50px;
+        }
+        
+        .username {
+            font-size: 1rem;
+        }
+        
+        .latest-message {
+            font-size: 0.9rem;
+        }
+    }
+</style>
+
+<div class="chat-container">
+    <!-- Chat Header -->
+    <div class="chat-header">
+        <h1 class="chat-title">
+            <i class="fas fa-comments me-2"></i>Messages
+        </h1>
+        <p class="chat-subtitle">Stay connected with your friends and community</p>
+    </div>
+    
+    <!-- Conversations List -->
+    <div class="conversations-section">
+        {% if conversations %}
+            {% for conversation in conversations %}
+                <a href="{% url 'chat' conversation.user.username %}" class="conversation-item">
+                    <div class="user-avatar-container">
+                        {% if conversation.user.profile_picture %}
+                            <img src="{{ conversation.user.profile_picture.url }}" alt="{{ conversation.user.username }}" class="user-avatar-large">
+                        {% else %}
+                            <div class="user-avatar-large" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 1.2rem;">
+                                {{ conversation.user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="conversation-content">
+                        <div class="conversation-header">
+                            <span class="username">{{ conversation.user.username }}</span>
+                            <span class="timestamp">
+                                {% if conversation.latest_message %}
+                                    {{ conversation.latest_message.timestamp|timesince }} ago
+                                {% endif %}
+                            </span>
+                        </div>
+                        
+                        <div class="message-preview">
+                            {% if conversation.latest_message %}
+                                {% if conversation.latest_message.sender == user %}
+                                    <span class="message-status">You:</span>
+                                {% endif %}
+                                <p class="latest-message">{{ conversation.latest_message.message|truncatechars:60 }}</p>
+                            {% else %}
+                                <p class="latest-message">Start a conversation...</p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    
+                    {% if conversation.unread_count > 0 %}
+                        <div class="unread-badge">{{ conversation.unread_count }}</div>
+                    {% endif %}
+                </a>
+            {% endfor %}
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">
+                    <i class="fas fa-comments"></i>
+                </div>
+                <h3>No Messages Yet</h3>
+                <p>Start conversations with your friends and community members to see them here.</p>
+                <a href="{% url 'home' %}" class="start-chat-btn">
+                    <i class="fas fa-users me-2"></i>Explore Community
+                </a>
+            </div>
+        {% endif %}
+    </div>
+</div>
+
+{% endblock %}

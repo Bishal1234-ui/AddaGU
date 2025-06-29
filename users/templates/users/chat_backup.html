@@ -1,0 +1,458 @@
+{% extends 'base.html' %}
+{% load static %}
+{% block title %}Chat with {{ receiver.username }}{% endblock %}
+{% block content %}
+<style>
+    .chat-container {
+        max-width: 800px;
+        margin: 0 auto;
+        height: 80vh;
+        display: flex;
+        flex-direction: column;
+        border: 1px solid #e1e8ed;
+        border-radius: 12px;
+        background: white;
+        box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+    }
+    
+    .chat-header {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        padding: 20px;
+        border-radius: 12px 12px 0 0;
+        display: flex;
+        align-items: center;
+        gap: 15px;
+    }
+    
+    .encryption-status {
+        margin-left: auto;
+        display: flex;
+        align-items: center;
+        gap: 5px;
+        font-size: 12px;
+        opacity: 0.8;
+    }
+    
+    .encryption-icon {
+        width: 16px;
+        height: 16px;
+        fill: currentColor;
+    }
+    
+    .chat-header img {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        border: 3px solid rgba(255,255,255,0.3);
+    }
+    
+    .chat-header h2 {
+        margin: 0;
+        font-size: 1.3em;
+        font-weight: 600;
+    }
+    
+    .chat-messages {
+        flex: 1;
+        overflow-y: auto;
+        padding: 20px;
+        background: #f8f9fa;
+        display: flex;
+        flex-direction: column;
+        gap: 15px;
+    }
+    
+    .message {
+        display: flex;
+        margin-bottom: 10px;
+        max-width: 70%;
+        animation: fadeIn 0.3s ease-in;
+    }
+    
+    .message.sent {
+        align-self: flex-end;
+        flex-direction: row-reverse;
+    }
+    
+    .message.received {
+        align-self: flex-start;
+    }
+    
+    .message-content {
+        background: #007bff;
+        color: white;
+        padding: 12px 18px;
+        border-radius: 20px;
+        position: relative;
+        word-wrap: break-word;
+        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    .message.received .message-content {
+        background: #e9ecef;
+        color: #333;
+    }
+    
+    .message-time {
+        font-size: 11px;
+        opacity: 0.7;
+        margin-top: 5px;
+        text-align: center;
+    }
+    
+    .message.sent .message-time {
+        text-align: right;
+    }
+    
+    .message.received .message-time {
+        text-align: left;
+    }
+    
+    .chat-input-container {
+        padding: 20px;
+        border-top: 1px solid #e1e8ed;
+        background: white;
+        border-radius: 0 0 12px 12px;
+    }
+    
+    .chat-input-group {
+        display: flex;
+        gap: 10px;
+        align-items: end;
+    }
+    
+    .chat-input {
+        flex: 1;
+        border: 2px solid #e1e8ed;
+        border-radius: 25px;
+        padding: 12px 20px;
+        resize: none;
+        outline: none;
+        font-size: 14px;
+        line-height: 1.4;
+        transition: border-color 0.3s ease;
+    }
+    
+    .chat-input:focus {
+        border-color: #007bff;
+    }
+    
+    .send-button {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        border: none;
+        border-radius: 50%;
+        width: 50px;
+        height: 50px;
+        color: white;
+        cursor: pointer;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        transition: transform 0.2s ease;
+    }
+    
+    .send-button:hover {
+        transform: scale(1.05);
+    }
+    
+    .send-button:active {
+        transform: scale(0.95);
+    }
+    
+    @keyframes fadeIn {
+        from { opacity: 0; transform: translateY(10px); }
+        to { opacity: 1; transform: translateY(0); }
+    }
+    
+    .typing-indicator {
+        display: none;
+        padding: 10px;
+        font-style: italic;
+        color: #666;
+        font-size: 14px;
+    }
+    
+    .online-status {
+        width: 12px;
+        height: 12px;
+        background: #28a745;
+        border-radius: 50%;
+        border: 2px solid white;
+        margin-left: -15px;
+        margin-top: 35px;
+    }
+</style>
+
+<div class="container mt-4">
+    <div class="chat-container">
+        <!-- Chat Header -->
+        <div class="chat-header">
+            {% if receiver.profile_picture %}
+                <img src="{{ receiver.profile_picture.url }}" alt="{{ receiver.username }}">
+            {% else %}
+                <img src="https://via.placeholder.com/50/667eea/ffffff?text={{ receiver.username.0|upper }}" alt="{{ receiver.username }}">
+            {% endif %}
+            <div class="online-status"></div>
+            <div>
+                <h2>{{ receiver.username }}</h2>
+                <small style="opacity: 0.8;">{{ receiver.first_name }} {{ receiver.last_name }}</small>
+            </div>
+            <div class="encryption-status" id="encryption-status">
+                <svg class="encryption-icon" viewBox="0 0 24 24">
+                    <path d="M12,1L3,5V11C3,16.55 6.84,21.74 12,23C17.16,21.74 21,16.55 21,11V5L12,1M12,7C13.4,7 14.8,8.6 14.8,10V11H16.2V16H7.8V11H9.2V10C9.2,8.6 10.6,7 12,7M12,8.2C11.2,8.2 10.4,8.7 10.4,10V11H13.6V10C13.6,8.7 12.8,8.2 12,8.2Z"/>
+                </svg>
+                <span>Encrypted</span>
+            </div>
+        </div>
+
+        <!-- Chat Messages -->
+        <div class="chat-messages" id="chat-log">
+            {% for msg in messages %}
+                <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}" 
+                     data-encrypted="{% if msg.is_encrypted %}true{% else %}false{% endif %}" 
+                     data-sender="{{ msg.sender.username }}"
+                     data-receiver="{{ msg.receiver.username }}"
+                     data-message-for-sender="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_sender }}{% endif %}"
+                     data-message-for-receiver="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_receiver }}{% endif %}"
+                     data-message="{% if not msg.is_encrypted %}{{ msg.message }}{% endif %}">
+                    <div class="message-content">
+                        <span class="message-text">
+                            {% if msg.is_encrypted %}
+                                <em>🔄 Decrypting...</em>
+                            {% else %}
+                                {{ msg.message }}
+                            {% endif %}
+                        </span>
+                        <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
+                    </div>
+                </div>
+            {% endfor %}
+        </div>
+
+        <!-- Typing Indicator -->
+        <div class="typing-indicator" id="typing-indicator">
+            {{ receiver.username }} is typing...
+        </div>
+
+        <!-- Chat Input -->
+        <div class="chat-input-container">
+            <div class="chat-input-group">
+                <textarea id="chat-message-input" class="chat-input" placeholder="Type a message..." rows="1"></textarea>
+                <button id="chat-message-send" class="send-button" title="Send message">
+                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
+                    </svg>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Include encryption library -->
+<script src="{% static 'users/js/chat-encryption.js' %}"></script>
+
+<script>
+    const roomName = "{{ room_name }}";
+    const currentUser = "{{ request.user.username }}";
+    const receiverUser = "{{ receiver.username }}";
+    const chatLog = document.querySelector('#chat-log');
+    
+    // Initialize encryption
+    let encryption = null;
+    let encryptionReady = false;
+    
+    // Auto-resize textarea
+    const textarea = document.querySelector('#chat-message-input');
+    textarea.addEventListener('input', function() {
+        this.style.height = 'auto';
+        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+    });
+
+    // Initialize encryption when page loads
+    async function initializeEncryption() {
+        try {
+            const success = await initializeChatEncryption(currentUser, receiverUser);
+            if (success) {
+                encryptionReady = true;
+                
+                // Decrypt existing messages
+                await decryptExistingMessages();
+                
+                console.log('Encryption ready');
+            } else {
+                console.warn('Encryption initialization failed');
+                encryptionReady = false;
+            }
+        } catch (error) {
+            console.error('Failed to initialize encryption:', error);
+            document.getElementById('encryption-status').innerHTML = 
+                '<span style="color: #dc3545;">❌ Encryption Failed</span>';
+        }
+    }
+
+    // Decrypt existing messages on page load
+    async function decryptExistingMessages() {
+        const messages = document.querySelectorAll('.message[data-encrypted="true"]');
+        for (const messageDiv of messages) {
+            const encryptedText = messageDiv.getAttribute('data-message');
+            const messageTextElement = messageDiv.querySelector('.message-text');
+            const isSentByCurrentUser = messageDiv.classList.contains('sent');
+            
+            if (encryptedText && encryptionReady && !isSentByCurrentUser) {
+                // Only decrypt received messages, not sent ones
+                try {
+                // Update to use new message structure
+                const messageData = {
+                    sender: messageDiv.getAttribute('data-sender'),
+                    receiver: messageDiv.getAttribute('data-receiver'),
+                    encrypted_message_for_sender: messageDiv.getAttribute('data-message-for-sender'),
+                    encrypted_message_for_receiver: messageDiv.getAttribute('data-message-for-receiver')
+                };
+                
+                const decryptedText = await displayDecryptedMessage(messageData, currentUser);
+                messageTextElement.textContent = decryptedText;
+                } catch (error) {
+                    console.error('Failed to decrypt message:', error);
+                    messageTextElement.innerHTML = '<em style="color: #dc3545;">❌ Failed to decrypt</em>';
+                }
+            } else if (isSentByCurrentUser && encryptedText) {
+                // For sent messages, show a user-friendly placeholder
+                messageTextElement.innerHTML = '<em style="color: #666;">� You sent an encrypted message</em>';
+            }
+        }
+    }
+
+    const chatSocket = new WebSocket(
+        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+    );
+
+    chatSocket.onopen = function(e) {
+        console.log('Chat socket connected');
+        scrollToBottom();
+    };
+
+    chatSocket.onmessage = async function(e) {
+        const data = JSON.parse(e.data);
+        const sender = data.sender;
+        const timestamp = new Date(data.timestamp);
+        const isEncrypted = data.is_encrypted;
+        const isSentByMe = sender === currentUser;
+        
+        // Skip messages sent by current user (we already displayed them)
+        if (isSentByMe) {
+            return;
+        }
+        
+        let messageText = '';
+        
+        // Handle message display for received messages only
+        if (isEncrypted && encryptionReady) {
+            try {
+                const messageData = {
+                    sender: data.sender,
+                    receiver: data.receiver,
+                    encrypted_message_for_sender: data.encrypted_message_for_sender,
+                    encrypted_message_for_receiver: data.encrypted_message_for_receiver
+                };
+                messageText = await displayDecryptedMessage(messageData, currentUser);
+            } catch (error) {
+                console.error('Failed to decrypt incoming message:', error);
+                messageText = '❌ Failed to decrypt message';
+            }
+        } else {
+            messageText = data.message || '❌ No message content';
+        }
+        
+        displayMessage(messageText, sender, timestamp, isEncrypted);
+    };
+
+    chatSocket.onclose = function(e) {
+        console.log('Chat socket disconnected');
+    };
+
+    async function sendMessage() {
+        const messageInput = document.querySelector('#chat-message-input');
+        const message = messageInput.value.trim();
+        
+        if (message !== '') {
+            // Immediately show the message to the sender
+            displayMessage(message, currentUser, new Date(), false);
+            
+            let messageData = {
+                'sender': currentUser,
+                'receiver': receiverUser,
+                'is_encrypted': encryptionReady
+            };
+            
+            if (encryptionReady) {
+                try {
+                    const success = await sendEncryptedMessage(message, currentUser, receiverUser, chatSocket);
+                    if (!success) {
+                        console.error('Failed to send encrypted message');
+                        // Fall back to plain text
+                        messageData.message = message;
+                        messageData.is_encrypted = false;
+                        chatSocket.send(JSON.stringify(messageData));
+                    }
+                } catch (error) {
+                    console.error('Failed to encrypt message:', error);
+                    // Fall back to plain text
+                    messageData.message = message;
+                    messageData.is_encrypted = false;
+                    chatSocket.send(JSON.stringify(messageData));
+                }
+            } else {
+                messageData.message = message;
+                messageData.is_encrypted = false;
+                chatSocket.send(JSON.stringify(messageData));
+            }
+            messageInput.value = '';
+            messageInput.style.height = 'auto';
+        }
+    }
+
+    // Helper function to display messages
+    function displayMessage(messageText, sender, timestamp, isEncrypted) {
+        const isSentByMe = sender === currentUser;
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${isSentByMe ? 'sent' : 'received'}`;
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <span class="message-text">${messageText}</span>
+                <div class="message-time">${timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            </div>
+        `;
+        
+        chatLog.appendChild(messageDiv);
+        scrollToBottom();
+    }
+
+    function scrollToBottom() {
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // Send message on button click
+    document.querySelector('#chat-message-send').onclick = sendMessage;
+
+    // Send message on Enter key (Shift+Enter for new line)
+    document.querySelector('#chat-message-input').addEventListener('keypress', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Initialize encryption when page loads
+    window.addEventListener('load', function() {
+        cleanupOldMessages(); // Clean up old localStorage entries
+        initializeEncryption();
+        setTimeout(scrollToBottom, 100);
+    });
+
+    // Focus on input when page loads
+    document.querySelector('#chat-message-input').focus();
+</script>
+{% endblock %}

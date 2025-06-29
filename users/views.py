@@ -121,10 +121,22 @@ def chat_view(request, username):
     room_name = f"chat_{min(request.user.id, receiver.id)}_{max(request.user.id, receiver.id)}"
     
     # Get existing messages between these two users
-    messages = ChatMessage.objects.filter(
+    messages_queryset = ChatMessage.objects.filter(
         Q(sender=request.user, receiver=receiver) | 
         Q(sender=receiver, receiver=request.user)
     ).order_by('timestamp')
+    
+    # Decrypt messages for display
+    decrypted_messages = []
+    for msg in messages_queryset:
+        decrypted_message = {
+            'sender': msg.sender,
+            'receiver': msg.receiver,
+            'message': msg.get_message_for_user(request.user),  # Decrypt for current user
+            'timestamp': msg.timestamp,
+            'is_read': msg.is_read
+        }
+        decrypted_messages.append(decrypted_message)
     
     # Mark messages as read
     ChatMessage.objects.filter(sender=receiver, receiver=request.user, is_read=False).update(is_read=True)
@@ -132,7 +144,7 @@ def chat_view(request, username):
     context = {
         'receiver': receiver,
         'room_name': room_name,
-        'messages': messages,
+        'messages': decrypted_messages,  # Pass decrypted messages
     }
     return render(request, 'users/chat.html', context)
 

@@ -145,3 +145,7 @@ STATIC_ROOT = BASE_DIR / 'staticfiles'
 # https://docs.djangoproject.com/en/4.2/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+
+# Chat Encryption Settings
+# In production, store this in environment variables
+CHAT_MASTER_KEY = os.environ.get('CHAT_MASTER_KEY', 'default-development-key-change-in-production')
