@@ -1,145 +1,536 @@
 {% extends 'base.html' %}
-{% block title %}Home{% endblock %}
+{% block title %}Explore - AddaGU{% endblock %}
 {% block content %}
-<div class="container" style="text-align: center;">
-    <div class="row" style="margin: 15px;padding: 10px;">
-        {% for post in posts %}
-        <div class="col-sm-12 col-md-12 col-lg-6 col-xl-6 col-xxl-6"
-            style="margin: 0px;max-width: 100%;margin-bottom: 10px;margin-top: 9px;margin-right: 0px;border: 4px solid var(--bs-body-bg) ;">
-            <div class="row"
-                style="text-align: center;background: linear-gradient(94deg, #4a1ec8 0%, rgb(134,81,247) 51%, #46a6ff 100%), rgb(236,12,255);">
-                <div class="col-2 col-lg-2 col-xl-1 col-xxl-1"
-                    style="margin-top: 11px;margin-bottom: 4px;text-align: left;">
-                    <a href="{% url 'user_profile' post.author.username %}">
-                    {% if post.author.profile_picture %}
-                    <img class="rounded-circle" src="{{ post.author.profile_picture.url }}" width="42" height="41">
-                    {% else %}
-                    <img class="rounded-circle" src="" width="42" height="41">
-                    {% endif %}
-                 </a>
-                </div>
-                <div class="col-6" style="margin-top: 11px;margin-bottom: 4px;text-align: left;">
-                    <a href="{% url 'user_profile' post.author.username %}">
-                    <p class="text-start" style="margin-top: 6px;color: rgb(248,248,248);" >{{ post.author }}</p>
-                </a>
-                </div>
-            </div>
-            <div class="row" style="text-align: center;">
-                <div class="col-sm-12 col-md-12 col-lg-12 col-xl-12 col-xxl-12">
-                    {% if post.blogimage %}
-                    <img class="object-fit-contain" alt="{{ post.title }}" src="{{ post.blogimage.url }}" width="284" height="440" style="text-align: center;">
-                    {% else %}
-                    <img class="object-fit-contain" alt="" src="" width="284" height="440" style="text-align: center;">
-                    {% endif %}
-                </div>
-            </div>
-            <div class="row" style="text-align: center;">
-                <div class="col" style="margin-top: 11px;margin-bottom: 4px;">
-                    <p style="font-weight: bold;">{{ post.title }}</p>
-                </div>
-            </div>
-            <div class="row"
-                style="background: linear-gradient(123deg, #5a2cd5, rgb(132,79,245) 48%, #49a3ff), var(--bs-primary);">
-                <div class="col-6 col-sm-6 col-md-6 col-lg-6 col-xl-6 col-xxl-6">
-                    <button id="like-btn-{{ post.pk }}" class="btn btn-primary" type="button" data-liked="{{ post.liked }}" data-url="{% url 'toggle_like' post.pk %}" data-post-id="{{ post.pk }}"
-                        style="background: rgba(253,85,13,0);border-style: none;width: 100px;height: 100%;">
-                        <small style="color: var(--bs-light);font-weight: bold;margin-right: 0px;font-size: 15px;" id="like-count-number-{{ post.pk }}">{{ post.likes.count }}</small>
-                        <span id="like-icon-{{ post.pk }}" style="font-size: 1.5rem;">{% if post.liked %}❤️{% else %}💛{% endif %}</span>
-                    </button>
-                    
-                </div>
-                
-                <div class="col-6 col-sm-6 col-md-6 col-lg-4 col-xl-6 col-xxl-6">
-                    <button class="btn btn-primary" type="button"
-                    style="background: rgb(255,255,255);border-style: none;width: 100px;height: 40px;margin-top: 4px;margin-bottom: 4px;">
-                    <a href="{% url 'blog_detail' post.pk %}">
-                    <small
-                        style="color: var(--bs-dark);font-weight: bold;margin-right: 0px;font-size: 13px;">
-                        See
-                        Post
-                    </small></a>
-                    </button>
-                </div>
-            </div>
+<style>
+    /* Modern Card Styles */
+    .post-card {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        transition: all 0.3s ease;
+        margin-bottom: 2rem;
+        border: 1px solid #f0f0f0;
+    }
+    
+    .post-card:hover {
+        transform: translateY(-5px);
+        box-shadow: 0 8px 30px rgba(0, 0, 0, 0.12);
+    }
+    
+    /* Header Styles */
+    .post-header {
+        padding: 1rem 1.25rem;
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        position: relative;
+    }
+    
+    .post-header::after {
+        content: '';
+        position: absolute;
+        bottom: 0;
+        left: 0;
+        right: 0;
+        height: 1px;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+    }
+    
+    .avatar {
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
+        border: 3px solid rgba(255, 255, 255, 0.3);
+        transition: transform 0.2s ease;
+    }
+    
+    .avatar:hover {
+        transform: scale(1.1);
+    }
+    
+    .user-info h6 {
+        margin: 0;
+        font-weight: 600;
+        font-size: 1rem;
+    }
+    
+    .user-info small {
+        opacity: 0.9;
+        font-size: 0.85rem;
+    }
+    
+    /* Image Container */
+    .post-image-container {
+        position: relative;
+        overflow: hidden;
+        background: #f8f9fa;
+    }
+    
+    .post-image {
+        width: 100%;
+        height: auto;
+        max-height: 500px;
+        object-fit: cover;
+        transition: transform 0.3s ease;
+    }
+    
+    .post-image:hover {
+        transform: scale(1.02);
+    }
+    
+    .image-overlay {
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(to bottom, transparent 0%, rgba(0,0,0,0.1) 100%);
+        opacity: 0;
+        transition: opacity 0.3s ease;
+    }
+    
+    .post-image-container:hover .image-overlay {
+        opacity: 1;
+    }
+    
+    /* Content Styles */
+    .post-content {
+        padding: 1.25rem;
+    }
+    
+    .post-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: #2c3e50;
+        margin-bottom: 0.75rem;
+        line-height: 1.4;
+    }
+    
+    .post-excerpt {
+        color: #6c757d;
+        font-size: 0.95rem;
+        line-height: 1.6;
+        margin-bottom: 1rem;
+    }
+    
+    /* Action Bar */
+    .post-actions {
+        padding: 1rem 1.25rem;
+        border-top: 1px solid #f0f0f0;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        background: #fafbfc;
+    }
+    
+    .action-btn {
+        border: none;
+        background: none;
+        padding: 8px 16px;
+        border-radius: 25px;
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        transition: all 0.2s ease;
+        font-weight: 500;
+        cursor: pointer;
+    }
+    
+    .like-btn {
+        color: #e74c3c;
+    }
+    
+    .like-btn:hover {
+        background: rgba(231, 76, 60, 0.1);
+        transform: scale(1.05);
+    }
+    
+    .like-btn.liked {
+        background: rgba(231, 76, 60, 0.1);
+        color: #c0392b;
+    }
+    
+    .view-btn {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        text-decoration: none;
+    }
+    
+    .view-btn:hover {
+        transform: scale(1.05);
+        color: white;
+        text-decoration: none;
+        box-shadow: 0 4px 15px rgba(102, 126, 234, 0.4);
+    }
+    
+    /* Responsive Grid */
+    .posts-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(350px, 1fr));
+        gap: 2rem;
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 1rem;
+    }
+    
+    /* Welcome Section */
+    .welcome-section {
+        text-align: center;
+        padding: 3rem 1rem;
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+        margin: -2rem -1rem 3rem -1rem;
+        border-radius: 0 0 30px 30px;
+    }
+    
+    .welcome-title {
+        font-size: 3rem;
+        font-weight: 700;
+        margin-bottom: 1rem;
+        text-shadow: 0 2px 10px rgba(0,0,0,0.3);
+    }
+    
+    .welcome-subtitle {
+        font-size: 1.2rem;
+        opacity: 0.9;
+        margin-bottom: 2rem;
+    }
+    
+    .stats {
+        display: flex;
+        justify-content: center;
+        gap: 3rem;
+        margin-top: 2rem;
+    }
+    
+    .stat-item {
+        text-align: center;
+    }
+    
+    .stat-number {
+        font-size: 2.5rem;
+        font-weight: 700;
+        display: block;
+    }
+    
+    .stat-label {
+        font-size: 0.9rem;
+        opacity: 0.8;
+    }
+    
+    /* Loading Animation */
+    .loading-skeleton {
+        background: linear-gradient(90deg, #f0f0f0 25%, #e0e0e0 50%, #f0f0f0 75%);
+        background-size: 200% 100%;
+        animation: loading 1.5s infinite;
+    }
+    
+    @keyframes loading {
+        0% { background-position: 200% 0; }
+        100% { background-position: -200% 0; }
+    }
+    
+    /* Mobile Optimizations */
+    @media (max-width: 768px) {
+        .posts-grid {
+            grid-template-columns: 1fr;
+            gap: 1.5rem;
+            padding: 0 0.5rem;
+        }
+        
+        .welcome-title {
+            font-size: 2.2rem;
+        }
+        
+        .welcome-subtitle {
+            font-size: 1rem;
+        }
+        
+        .stats {
+            gap: 2rem;
+        }
+        
+        .stat-number {
+            font-size: 2rem;
+        }
+        
+        .post-card {
+            margin-bottom: 1.5rem;
+        }
+        
+        .post-actions {
+            flex-direction: column;
+            gap: 0.5rem;
+            align-items: stretch;
+        }
+        
+        .action-btn {
+            justify-content: center;
+        }
+    }
+    
+    @media (max-width: 480px) {
+        .welcome-section {
+            padding: 2rem 1rem;
+        }
+        
+        .posts-grid {
+            grid-template-columns: 1fr;
+            gap: 1rem;
+            padding: 0 0.25rem;
+        }
+        
+        .post-content {
+            padding: 1rem;
+        }
+        
+        .post-header {
+            padding: 0.75rem 1rem;
+        }
+    }
+    
+    /* Fade In Animation */
+    .post-card {
+        animation: none; /* Disable animation for now */
+    }
+    
+    /* Simplified heart beat animation for likes */
+    @keyframes heartbeat {
+        0% { transform: scale(1); }
+        50% { transform: scale(1.1); }
+        100% { transform: scale(1); }
+    }
+    
+    .like-icon.animate {
+        animation: heartbeat 0.3s ease;
+    }
+</style>
+
+<div class="welcome-section">
+    <h1 class="welcome-title">আড্ডা GU</h1>
+    <p class="welcome-subtitle">Discover amazing content from the Gauhati University community</p>
+    <div class="stats">
+        <div class="stat-item">
+            <span class="stat-number">{{ posts|length }}</span>
+            <span class="stat-label">Posts</span>
         </div>
-        {% endfor %}
+        <div class="stat-item">
+            <span class="stat-number">{{ total_users }}</span>
+            <span class="stat-label">Members</span>
+        </div>
+        <div class="stat-item">
+            <span class="stat-number">{{ total_likes }}</span>
+            <span class="stat-label">Likes</span>
+        </div>
     </div>
 </div>
+
+<div class="posts-grid">
+    {% for post in posts %}
+    <article class="post-card" data-post-id="{{ post.pk }}">
+        <!-- Post Header -->
+        <div class="post-header">
+            <a href="{% url 'user_profile' post.author.username %}" class="d-flex align-items-center text-decoration-none text-white">
+                {% if post.author.profile_picture %}
+                    <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.username }}" class="avatar">
+                {% else %}
+                    <img src="https://via.placeholder.com/45/667eea/ffffff?text={{ post.author.username.0|upper }}" alt="{{ post.author.username }}" class="avatar">
+                {% endif %}
+                <div class="user-info">
+                    <h6>{{ post.author.username }}</h6>
+                    <small>{{ post.created_at|timesince }} ago</small>
+                </div>
+            </a>
+        </div>
+        
+        <!-- Post Image -->
+        {% if post.blogimage %}
+        <div class="post-image-container">
+            <img src="{{ post.blogimage.url }}" alt="{{ post.title }}" class="post-image">
+            <div class="image-overlay"></div>
+        </div>
+        {% endif %}
+        
+        <!-- Post Content -->
+        <div class="post-content">
+            <h3 class="post-title">{{ post.title }}</h3>
+            {% if post.excerpt %}
+                <p class="post-excerpt">{{ post.excerpt|truncatewords:20 }}</p>
+            {% endif %}
+        </div>
+        
+        <!-- Post Actions -->
+        <div class="post-actions">
+            <button class="action-btn like-btn {% if post.liked %}liked{% endif %}" 
+                    id="like-btn-{{ post.pk }}" 
+                    data-liked="{{ post.liked }}" 
+                    data-url="{% url 'toggle_like' post.pk %}" 
+                    data-post-id="{{ post.pk }}">
+                <span class="like-icon" id="like-icon-{{ post.pk }}">
+                    {% if post.liked %}❤️{% else %}🤍{% endif %}
+                </span>
+                <span id="like-count-{{ post.pk }}">{{ post.likes.count }}</span>
+                <span>Like{{ post.likes.count|pluralize }}</span>
+            </button>
+            
+            <a href="{% url 'blog_detail' post.pk %}" class="action-btn view-btn">
+                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M12 4.5C7 4.5 2.73 7.61 1 12c1.73 4.39 6 7.5 11 7.5s9.27-3.11 11-7.5c-1.73-4.39-6-7.5-11-7.5zM12 17c-2.76 0-5-2.24-5-5s2.24-5 5-5 5 2.24 5 5-2.24 5-5 5zm0-8c-1.66 0-3 1.34-3 3s1.34 3 3 3 3-1.34 3-3-1.34-3-3-3z"/>
+                </svg>
+                View Post
+            </a>
+        </div>
+    </article>
+    {% empty %}
+    <div class="col-12 text-center py-5">
+        <div style="font-size: 4rem; opacity: 0.3;">📝</div>
+        <h3 class="mt-3 text-muted">No posts yet</h3>
+        <p class="text-muted">Be the first to share something amazing!</p>
+        {% if user.is_authenticated %}
+            <a href="{% url 'create_post' %}" class="btn btn-primary btn-lg mt-3">Create Your First Post</a>
+        {% endif %}
+    </div>
+    {% endfor %}
+</div>
+
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        const likeButtons = document.querySelectorAll('[id^="like-btn-"]');
+document.addEventListener('DOMContentLoaded', function() {
+    const likeButtons = document.querySelectorAll('.like-btn');
 
-        likeButtons.forEach(button => {
-            const postId = button.getAttribute('data-post-id');
-            const liked = button.getAttribute('data-liked') === 'true';
+    likeButtons.forEach(button => {
+        button.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const postId = this.getAttribute('data-post-id');
+            const url = this.getAttribute('data-url');
+            const liked = this.getAttribute('data-liked') === 'true';
             const likeIcon = document.getElementById(`like-icon-${postId}`);
-            const likeCount = document.getElementById(`like-count-number-${postId}`);
+            const likeCount = document.getElementById(`like-count-${postId}`);
+            
+            // Add animation
+            likeIcon.classList.add('animate');
+            setTimeout(() => likeIcon.classList.remove('animate'), 300);
+            
+            // Optimistic UI update
+            if (liked) {
+                likeIcon.textContent = '🤍';
+                this.classList.remove('liked');
+                this.setAttribute('data-liked', 'false');
+            } else {
+                likeIcon.textContent = '❤️';
+                this.classList.add('liked');
+                this.setAttribute('data-liked', 'true');
+            }
 
-            // Set the initial state of the like icon
-           
-
-            button.addEventListener('click', function() {
-                const btn = this;
-                const url = btn.getAttribute('data-url');
-                const liked = btn.getAttribute('data-liked') === 'true';
-
-                fetch(url, {
-                    method: 'POST',
-                    headers: {
-                        'Content-Type': 'application/json',
-                        'X-CSRFToken': getCookie('csrftoken')
-                    },
-                    body: JSON.stringify({})
-                }).then(response => {
-                    if (!response.ok) {
-                        throw new Error('Network response was not ok');
-                    }
-                    return response.json();
-                }).then(data => {
-                    if (data.liked) {
-                        likeIcon.textContent = '❤️';
-                        btn.setAttribute('data-liked', 'true');
-                    } else {
-                        likeIcon.textContent = '💛';
-                        btn.setAttribute('data-liked', 'false');
-                    }
-                    likeCount.textContent = data.likes_count;
-                }).catch(error => {
-                    console.error('Fetch error:', error);
-                });
-
-                // WebSocket connection for real-time like count updates
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': getCookie('csrftoken')
+                },
+                body: JSON.stringify({})
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                // Update UI with server response
+                if (data.liked) {
+                    likeIcon.textContent = '❤️';
+                    this.classList.add('liked');
+                    this.setAttribute('data-liked', 'true');
+                } else {
+                    likeIcon.textContent = '🤍';
+                    this.classList.remove('liked');
+                    this.setAttribute('data-liked', 'false');
+                }
+                likeCount.textContent = data.likes_count;
+                
+                // WebSocket for real-time updates
                 const wsProtocol = window.location.protocol === 'https:' ? 'wss://' : 'ws://';
                 const likeSocket = new WebSocket(
                     wsProtocol + window.location.host + '/ws/like/' + postId + '/'
                 );
 
                 likeSocket.onmessage = function(e) {
-                    const data = JSON.parse(e.data);
-                    const likesCount = data.likes_count;
-                    likeCount.textContent = likesCount;
+                    const socketData = JSON.parse(e.data);
+                    likeCount.textContent = socketData.likes_count;
                 };
 
                 likeSocket.onclose = function(e) {
-                    console.error('WebSocket closed unexpectedly');
+                    console.log('WebSocket closed');
                 };
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                // Revert optimistic update on error
+                if (liked) {
+                    likeIcon.textContent = '❤️';
+                    this.classList.add('liked');
+                    this.setAttribute('data-liked', 'true');
+                } else {
+                    likeIcon.textContent = '🤍';
+                    this.classList.remove('liked');
+                    this.setAttribute('data-liked', 'false');
+                }
             });
         });
     });
+});
 
-    function getCookie(name) {
-        let cookieValue = null;
-        if (document.cookie && document.cookie !== '') {
-            const cookies = document.cookie.split(';');
-            for (let i = 0; i < cookies.length; i++) {
-                const cookie = cookies[i].trim();
-                if (cookie.substring(0, name.length + 1) === (name + '=')) {
-                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
-                    break;
-                }
+function getCookie(name) {
+    let cookieValue = null;
+    if (document.cookie && document.cookie !== '') {
+        const cookies = document.cookie.split(';');
+        for (let i = 0; i < cookies.length; i++) {
+            const cookie = cookies[i].trim();
+            if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                break;
             }
         }
-        return cookieValue;
     }
+    return cookieValue;
+}
+
+// Intersection Observer for lazy loading and animations
+document.addEventListener('DOMContentLoaded', function() {
+    try {
+        const observerOptions = {
+            threshold: 0.1,
+            rootMargin: '0px 0px -50px 0px'
+        };
+
+        const observer = new IntersectionObserver((entries) => {
+            entries.forEach(entry => {
+                if (entry.isIntersecting) {
+                    entry.target.style.opacity = '1';
+                    entry.target.style.transform = 'translateY(0)';
+                }
+            });
+        }, observerOptions);
+
+        const cards = document.querySelectorAll('.post-card');
+        cards.forEach(card => {
+            card.style.opacity = '0';
+            card.style.transform = 'translateY(30px)';
+            card.style.transition = 'all 0.6s ease';
+            observer.observe(card);
+        });
+    } catch (error) {
+        console.log('Observer error:', error);
+        // Fallback: just show all cards
+        document.querySelectorAll('.post-card').forEach(card => {
+            card.style.opacity = '1';
+            card.style.transform = 'translateY(0)';
+        });
+    }
+});
 </script>
 {% endblock %}

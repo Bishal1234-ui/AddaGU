@@ -3,23 +3,33 @@ from .models import BlogPost, Comment, Like
 from django.contrib.auth.decorators import login_required
 from .forms import BlogPostForm
 from django.http import JsonResponse, HttpResponse
+from django.contrib.auth import get_user_model
+from django.db.models import Count
 
 # for the websocket
 from asgiref.sync import async_to_sync
 from channels.layers import get_channel_layer
 
+User = get_user_model()
+
 # @login_required
 def home_view(request):
-    posts = BlogPost.objects.all()
+    posts = BlogPost.objects.all().order_by('-created_at')
     liked_posts = []
     if request.user.is_authenticated:
         liked_posts = Like.objects.filter(user=request.user).values_list('blog_post_id', flat=True)
 
     for post in posts:
         post.liked = post.pk in liked_posts
+    
+    # Get statistics for the welcome section
+    total_users = User.objects.count()
+    total_likes = Like.objects.count()
+    
     return render(request, 'blogs/home.html', {
         'posts': posts,
-        
+        'total_users': total_users,
+        'total_likes': total_likes,
     })
 
 
@@ -76,13 +86,15 @@ def blog_detail_view(request, pk):
                     'type': 'comment_update',
                     'comment': comment.text,
                     'username': comment.author.username,
-                    'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                    'created_at': comment.created_at.strftime('%b %d, %Y %I:%M %p'),
+                    'comment_id': comment.id
                 }
             )
             return JsonResponse({
                 'text': comment.text,
                 'username': comment.author.username,
-                'created_at': comment.created_at.strftime('%Y-%m-%d %H:%M:%S')
+                'created_at': comment.created_at.strftime('%b %d, %Y %I:%M %p'),
+                'comment_id': comment.id
             })
 
             # Redirect to the same blog detail page to show the new comment

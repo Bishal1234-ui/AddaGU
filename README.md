@@ -83,11 +83,11 @@ AddaGU (আড্ডাGU) is a social media application designed exclusively fo
 
 5. Run the development server ( in asgi ) :
    ```bash
-   daphne -p 8000 GUBlogs.asgi:application
+   daphne -p 8001 GUBlogs.asgi:application
    ```
 
 6. Access the application:
-   Open your web browser and navigate to `http://127.0.0.1:8000/`.
+   Open your web browser and navigate to `http://127.0.0.1:8001/`.
 
 
 

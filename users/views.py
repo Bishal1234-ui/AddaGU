@@ -1,13 +1,13 @@
-
 from django.shortcuts import render, redirect, get_list_or_404, get_object_or_404
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser
+from .models import CustomUser, ChatMessage
 # we need blog post to get the blog of a specific user
 from blogs.models import BlogPost
 from django.contrib.auth.decorators import login_required
 from django.http import JsonResponse, HttpResponse
+from django.db.models import Q
 
 
 def signup_view(request):
@@ -114,3 +114,25 @@ def delete_post_view(request, pk):
         return redirect('profile')
     else:
         return HttpResponse("You are not allowed to delete this post.")
+
+@login_required 
+def chat_view(request, username):
+    receiver = get_object_or_404(CustomUser, username=username)
+    room_name = f"chat_{min(request.user.id, receiver.id)}_{max(request.user.id, receiver.id)}"
+    
+    # Get existing messages between these two users
+    messages = ChatMessage.objects.filter(
+        Q(sender=request.user, receiver=receiver) | 
+        Q(sender=receiver, receiver=request.user)
+    ).order_by('timestamp')
+    
+    # Mark messages as read
+    ChatMessage.objects.filter(sender=receiver, receiver=request.user, is_read=False).update(is_read=True)
+    
+    context = {
+        'receiver': receiver,
+        'room_name': room_name,
+        'messages': messages,
+    }
+    return render(request, 'users/chat.html', context)
+

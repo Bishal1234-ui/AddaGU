@@ -1,81 +1,534 @@
 {% extends 'base.html' %}
 {% block title %}{{ post.title }}{% endblock %}
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <div class="card">
-                <div class="card-header text-light text-center" style="background-color: #004d4d;">
-                    <h2 class="card-title">{{ post.title }}</h2>
-                </div>
-                <div class="card-body" style="background-color: #8ef6f692;">
-                    <p class="card-text">{{ post.content }}</p>
-                    <p class="card-text text-muted">By <a href="{% url 'user_profile' post.author.username %}">{{ post.author }} </a> on {{ post.created_at|date:"F d, Y" }}</p>
-                </div>
-                <div>
-                    {% if post.blogimage %}
-                    <img src="{{ post.blogimage.url }}" alt="{{ post.title }}" class="img-fluid mb-3">
+
+<style>
+    /* Modern Blog Detail Styles */
+    .blog-container {
+        max-width: 800px;
+        margin: 0 auto;
+        padding: 2rem 1rem;
+    }
+    
+    .blog-article {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+        margin-bottom: 2rem;
+    }
+    
+    .blog-header {
+        padding: 2rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .blog-title {
+        font-size: 2.5rem;
+        font-weight: 700;
+        color: #1a202c;
+        margin: 0 0 1rem 0;
+        line-height: 1.2;
+    }
+    
+    .blog-meta {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        color: #718096;
+        flex-wrap: wrap;
+    }
+    
+    .author-info {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        text-decoration: none;
+        color: #4299e1;
+        font-weight: 500;
+        transition: color 0.2s ease;
+    }
+    
+    .author-info:hover {
+        color: #3182ce;
+    }
+    
+    .author-avatar {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .blog-date {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-size: 0.9rem;
+    }
+    
+    .blog-image {
+        width: 100%;
+        max-height: 400px;
+        object-fit: cover;
+        display: block;
+    }
+    
+    .blog-content {
+        padding: 2rem;
+        font-size: 1.1rem;
+        line-height: 1.7;
+        color: #2d3748;
+    }
+    
+    .blog-content p {
+        margin-bottom: 1.5rem;
+    }
+    
+    .blog-actions {
+        padding: 1.5rem 2rem;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+        display: flex;
+        align-items: center;
+        justify-content: between;
+        gap: 1rem;
+        flex-wrap: wrap;
+    }
+    
+    .like-section {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+    }
+    
+    .like-btn {
+        background: none;
+        border: none;
+        cursor: pointer;
+        font-size: 1.5rem;
+        transition: transform 0.2s ease;
+        padding: 0.5rem;
+        border-radius: 50%;
+    }
+    
+    .like-btn:hover {
+        transform: scale(1.1);
+        background: rgba(255, 0, 0, 0.1);
+    }
+    
+    .like-count {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        font-weight: 500;
+        color: #4a5568;
+    }
+    
+    .view-likes-btn {
+        background: none;
+        border: 1px solid #e2e8f0;
+        color: #4a5568;
+        padding: 0.5rem 1rem;
+        border-radius: 20px;
+        cursor: pointer;
+        transition: all 0.2s ease;
+        font-size: 0.9rem;
+    }
+    
+    .view-likes-btn:hover {
+        background: #f7fafc;
+        border-color: #cbd5e0;
+    }
+    
+    .comments-section {
+        background: white;
+        border-radius: 16px;
+        box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+        overflow: hidden;
+    }
+    
+    .comments-header {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+    
+    .comments-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        color: #2d3748;
+        margin: 0;
+    }
+    
+    .comments-list {
+        max-height: 500px;
+        overflow-y: auto;
+    }
+    
+    .comment-item {
+        padding: 1.5rem 2rem;
+        border-bottom: 1px solid #f7fafc;
+        transition: background 0.2s ease;
+    }
+    
+    .comment-item:hover {
+        background: #f8fafc;
+    }
+    
+    .comment-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 0.5rem;
+    }
+    
+    .comment-author {
+        font-weight: 600;
+        color: #2d3748;
+    }
+    
+    .comment-date {
+        font-size: 0.8rem;
+        color: #a0aec0;
+    }
+    
+    .comment-text {
+        color: #4a5568;
+        margin: 0;
+        line-height: 1.6;
+    }
+    
+    .delete-comment-btn {
+        background: none;
+        border: none;
+        color: #e53e3e;
+        cursor: pointer;
+        padding: 0.25rem;
+        border-radius: 4px;
+        transition: background 0.2s ease;
+    }
+    
+    .delete-comment-btn:hover {
+        background: rgba(229, 62, 62, 0.1);
+    }
+    
+    .comment-form-section {
+        padding: 2rem;
+        border-top: 1px solid #e2e8f0;
+        background: #f8fafc;
+    }
+    
+    .add-comment-btn {
+        background: #4299e1;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 25px;
+        cursor: pointer;
+        font-weight: 500;
+        transition: all 0.2s ease;
+        margin-bottom: 1rem;
+    }
+    
+    .add-comment-btn:hover {
+        background: #3182ce;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(66, 153, 225, 0.4);
+    }
+    
+    .comment-form {
+        background: white;
+        border-radius: 12px;
+        padding: 1.5rem;
+        box-shadow: 0 2px 8px rgba(0, 0, 0, 0.05);
+        display: none;
+    }
+    
+    .comment-textarea {
+        width: 100%;
+        border: 2px solid #e2e8f0;
+        border-radius: 8px;
+        padding: 1rem;
+        font-size: 1rem;
+        resize: vertical;
+        min-height: 100px;
+        transition: border-color 0.2s ease;
+    }
+    
+    .comment-textarea:focus {
+        outline: none;
+        border-color: #4299e1;
+        box-shadow: 0 0 0 3px rgba(66, 153, 225, 0.1);
+    }
+    
+    .submit-comment-btn {
+        background: #48bb78;
+        color: white;
+        border: none;
+        padding: 0.75rem 1.5rem;
+        border-radius: 8px;
+        cursor: pointer;
+        font-weight: 500;
+        margin-top: 1rem;
+        transition: all 0.2s ease;
+    }
+    
+    .submit-comment-btn:hover {
+        background: #38a169;
+        transform: translateY(-1px);
+    }
+    
+    /* Modal Styles */
+    .modal-overlay {
+        position: fixed;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: rgba(0, 0, 0, 0.5);
+        display: none;
+        z-index: 1000;
+        backdrop-filter: blur(4px);
+    }
+    
+    .modal-content {
+        position: fixed;
+        top: 50%;
+        left: 50%;
+        transform: translate(-50%, -50%);
+        background: white;
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 400px;
+        width: 90vw;
+        max-height: 80vh;
+        overflow-y: auto;
+        box-shadow: 0 20px 60px rgba(0, 0, 0, 0.2);
+    }
+    
+    .modal-header {
+        display: flex;
+        justify-content: between;
+        align-items: center;
+        margin-bottom: 1.5rem;
+        padding-bottom: 1rem;
+        border-bottom: 1px solid #e2e8f0;
+    }
+    
+    .modal-title {
+        font-size: 1.3rem;
+        font-weight: 600;
+        margin: 0;
+    }
+    
+    .close-btn {
+        background: none;
+        border: none;
+        font-size: 1.5rem;
+        cursor: pointer;
+        color: #a0aec0;
+        transition: color 0.2s ease;
+    }
+    
+    .close-btn:hover {
+        color: #4a5568;
+    }
+    
+    .user-list-item {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        padding: 0.75rem 0;
+        border-bottom: 1px solid #f7fafc;
+    }
+    
+    .user-avatar-small {
+        width: 32px;
+        height: 32px;
+        border-radius: 50%;
+        object-fit: cover;
+    }
+    
+    .user-info a {
+        text-decoration: none;
+        color: #2d3748;
+        font-weight: 500;
+    }
+    
+    .user-info a:hover {
+        color: #4299e1;
+    }
+    
+    /* Empty State */
+    .empty-state {
+        text-align: center;
+        padding: 2rem;
+        color: #718096;
+    }
+    
+    .empty-state-icon {
+        font-size: 2rem;
+        margin-bottom: 1rem;
+        opacity: 0.5;
+    }
+    
+    /* Responsive Design */
+    @media (max-width: 768px) {
+        .blog-container {
+            padding: 1rem 0.5rem;
+        }
+        
+        .blog-title {
+            font-size: 2rem;
+        }
+        
+        .blog-header,
+        .blog-content,
+        .comment-form-section {
+            padding: 1.5rem;
+        }
+        
+        .blog-actions {
+            padding: 1rem 1.5rem;
+        }
+        
+        .comment-item {
+            padding: 1rem 1.5rem;
+        }
+        
+        .modal-content {
+            margin: 1rem;
+            width: calc(100vw - 2rem);
+        }
+    }
+</style>
+
+<div class="blog-container">
+    <!-- Blog Article -->
+    <article class="blog-article">
+        <header class="blog-header">
+            <h1 class="blog-title">{{ post.title }}</h1>
+            <div class="blog-meta">
+                <a href="{% url 'user_profile' post.author.username %}" class="author-info">
+                    {% if post.author.profile_picture %}
+                        <img src="{{ post.author.profile_picture.url }}" alt="{{ post.author.username }}" class="author-avatar">
+                    {% else %}
+                        <div class="author-avatar" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem;">
+                            {{ post.author.username|first|upper }}
+                        </div>
                     {% endif %}
+                    <span>{{ post.author.username }}</span>
+                </a>
+                <div class="blog-date">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,3H18V1H16V3H8V1H6V3H5A2,2 0 0,0 3,5V19A2,2 0 0,0 5,21H19A2,2 0 0,0 21,19V5A2,2 0 0,0 19,3M19,19H5V8H19V19Z"/>
+                    </svg>
+                    <span>{{ post.created_at|date:"F d, Y" }}</span>
                 </div>
             </div>
+        </header>
+        
+        {% if post.blogimage %}
+            <img src="{{ post.blogimage.url }}" alt="{{ post.title }}" class="blog-image">
+        {% endif %}
+        
+        <div class="blog-content">
+            {{ post.content|linebreaks }}
         </div>
-    </div>
-</div>
-
-<div class="container mt-4">
-    <div class="row justify-content-center">
-        <div class="col-md-8">
-            <h3>Comments</h3>
-            <ul id="comments-list" class="list-group">
+        
+        <div class="blog-actions">
+            <div class="like-section">
+                <button id="like-btn" class="like-btn" data-liked="{{ liked }}" data-url="{% url 'toggle_like' post.pk %}" data-post-id="{{ post.pk }}">
+                    <span id="like-icon">{% if liked %}❤️{% else %}🤍{% endif %}</span>
+                </button>
+                <div class="like-count">
+                    <span id="like-count-number">{{ post.likes.count }}</span>
+                    <span>likes</span>
+                </div>
+            </div>
+            <button id="view-likes-btn" class="view-likes-btn">View Likes</button>
+        </div>
+    </article>
+    
+    <!-- Comments Section -->
+    <section class="comments-section">
+        <div class="comments-header">
+            <h3 class="comments-title">Comments</h3>
+        </div>
+        
+        {% if comments %}
+            <div class="comments-list">
                 {% for comment in comments %}
-                <li class="list-group-item d-flex justify-content-between align-items-center" id="comment-{{ comment.id }}">
-                    <div>
-                        <p><strong>{{ comment.author.username }}</strong> ({{ comment.created_at }}):</p>
-                        <p>{{ comment.text }}</p>
+                    <div class="comment-item" id="comment-{{ comment.id }}">
+                        <div class="comment-header">
+                            <div>
+                                <span class="comment-author">{{ comment.author.username }}</span>
+                                <span class="comment-date">{{ comment.created_at|date:"M d, Y g:i A" }}</span>
+                            </div>
+                            {% if comment.author == user %}
+                                <button class="delete-comment-btn" data-comment-id="{{ comment.id }}">
+                                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                                    </svg>
+                                </button>
+                            {% endif %}
+                        </div>
+                        <p class="comment-text">{{ comment.text }}</p>
                     </div>
-                    {% if comment.author == user %}
-                    <button class="btn btn-danger btn-sm delete-comment-btn" data-comment-id="{{ comment.id }}">
-                        <i class="fas fa-trash-alt"></i> <!-- FontAwesome Trash Icon -->
-                    </button>
-                    {% endif %}
-                </li>
                 {% endfor %}
-            </ul>
-            <hr>
-            <button id="add-comment-btn" class="btn btn-primary mb-3">Add Comment</button>
-            <div id="comment-form" class="card p-3" style="display: none;">
-                <form id="comment-form-element" method="post">
+            </div>
+        {% else %}
+            <div class="empty-state">
+                <div class="empty-state-icon">💬</div>
+                <p>No comments yet. Be the first to comment!</p>
+            </div>
+        {% endif %}
+        
+        <div class="comment-form-section">
+            <button id="add-comment-btn" class="add-comment-btn">Add Comment</button>
+            <div id="comment-form" class="comment-form">
+                <form id="comment-form-element" method="post" action="{% url 'blog_detail' post.pk %}">
                     {% csrf_token %}
-                    <div class="form-group">
-                        <label for="commentText">Comment:</label>
-                        <textarea id="commentText" name="text" class="form-control" rows="3" placeholder="Add a comment..."></textarea>
-                    </div>
-                    <button type="submit" class="btn btn-primary">Submit</button>
+                    <textarea id="commentText" name="text" class="comment-textarea" placeholder="Share your thoughts..." required></textarea>
+                    <button type="submit" class="submit-comment-btn">Post Comment</button>
                 </form>
             </div>
         </div>
+    </section>
+</div>
+
+<!-- Likes Modal -->
+<div id="likes-modal-overlay" class="modal-overlay">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">Liked by</h3>
+            <button id="close-likes-modal" class="close-btn">&times;</button>
+        </div>
+        <div id="likes-list">
+            {% if likes %}
+                {% for like in likes %}
+                    <div class="user-list-item">
+                        {% if like.user.profile_picture %}
+                            <img src="{{ like.user.profile_picture.url }}" alt="{{ like.user.username }}" class="user-avatar-small">
+                        {% else %}
+                            <div class="user-avatar-small" style="background: linear-gradient(45deg, #667eea, #764ba2); display: flex; align-items: center; justify-content: center; color: white; font-weight: bold; font-size: 0.8rem;">
+                                {{ like.user.username|first|upper }}
+                            </div>
+                        {% endif %}
+                        <div class="user-info">
+                            <a href="{% url 'user_profile' like.user.username %}">{{ like.user.username }}</a>
+                        </div>
+                    </div>
+                {% endfor %}
+            {% else %}
+                <div class="empty-state">
+                    <div class="empty-state-icon">👥</div>
+                    <p>No likes yet</p>
+                </div>
+            {% endif %}
+        </div>
     </div>
-</div>
-
-<div class="container mt-4 text-center">
-    <button id="like-btn" class="btn btn-outline-none" data-liked="{{ liked }}" data-url="{% url 'toggle_like' post.pk %}" data-post-id="{{ post.pk }}">
-        <span id="like-icon" style="font-size: 2rem;">{% if liked %}❤️{% else %}💛{% endif %}</span>
-    </button>
-    <span id="like-count" class="ml-2">
-        <i class="fas fa-heart"></i>
-        <span id="like-count-number">{{ post.likes.count }}</span>
-    </span>
-    <button id="view-likes-btn" class="btn btn-info ml-2">View Likes</button>
-</div>
-
-<div id="likes-popup" class="p-3 border rounded bg-light" style="display: none; position: fixed; top: 50%; left: 50%; transform: translate(-50%, -50%); z-index: 1000; background: white;">
-    <h3>Liked by:</h3>
-    <ul class="list-group">
-        {% for like in likes %}
-        <li class="list-group-item">{{ like.user.username }}</li>
-        {% endfor %}
-    </ul>
-    <button id="close-likes-popup" class="btn btn-secondary mt-2">Close</button>
 </div>
 
 <script>
@@ -137,12 +590,12 @@
 
         // Show likes popup
         document.getElementById('view-likes-btn').addEventListener('click', function() {
-            document.getElementById('likes-popup').style.display = 'block';
+            document.getElementById('likes-modal-overlay').style.display = 'block';
         });
 
         // Close likes popup
-        document.getElementById('close-likes-popup').addEventListener('click', function() {
-            document.getElementById('likes-popup').style.display = 'none';
+        document.getElementById('close-likes-modal').addEventListener('click', function() {
+            document.getElementById('likes-modal-overlay').style.display = 'none';
         });
 
         // Connect to the WebSocket for Likes
@@ -176,13 +629,76 @@
             const comment = data.comment;
             const username = data.username;
             const created_at = data.created_at;
+            const commentId = data.comment_id;
 
             // Add the new comment to the comments list
-            const commentsList = document.getElementById('comments-list');
-            const newComment = document.createElement('li');
-            newComment.classList.add('list-group-item');
-            newComment.innerHTML = `<p><strong>${username}</strong> (${created_at}):</p><p>${comment}</p>`;
-            commentsList.appendChild(newComment);
+            const commentsList = document.querySelector('.comments-list');
+            if (!commentsList) {
+                // If there's no comments list (empty state), create one and remove empty state
+                const emptyState = document.querySelector('.empty-state');
+                if (emptyState) {
+                    emptyState.remove();
+                }
+                const commentsSection = document.querySelector('.comments-section');
+                const commentsHeader = document.querySelector('.comments-header');
+                const newCommentsList = document.createElement('div');
+                newCommentsList.className = 'comments-list';
+                commentsSection.insertBefore(newCommentsList, document.querySelector('.comment-form-section'));
+            }
+            
+            const finalCommentsList = document.querySelector('.comments-list');
+            const newComment = document.createElement('div');
+            newComment.className = 'comment-item';
+            newComment.id = `comment-${commentId}`;
+            
+            // Check if this comment is from the current user
+            const currentUser = '{{ user.username }}';
+            const deleteButton = username === currentUser ? 
+                `<button class="delete-comment-btn" data-comment-id="${commentId}">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                        <path d="M19,4H15.5L14.5,3H9.5L8.5,4H5V6H19M6,19A2,2 0 0,0 8,21H16A2,2 0 0,0 18,19V7H6V19Z"/>
+                    </svg>
+                </button>` : '';
+            
+            newComment.innerHTML = `
+                <div class="comment-header">
+                    <div>
+                        <span class="comment-author">${username}</span>
+                        <span class="comment-date">${created_at}</span>
+                    </div>
+                    ${deleteButton}
+                </div>
+                <p class="comment-text">${comment}</p>
+            `;
+            
+            finalCommentsList.appendChild(newComment);
+            
+            // Add event listener to the delete button if it exists
+            if (username === currentUser) {
+                const deleteBtn = newComment.querySelector('.delete-comment-btn');
+                deleteBtn.addEventListener('click', function() {
+                    const commentId = this.getAttribute('data-comment-id');
+                    const deleteUrl = `{% url 'delete_comment' 0 %}`.replace('0', commentId);
+
+                    fetch(deleteUrl, {
+                        method: 'DELETE',
+                        headers: {
+                            'X-CSRFToken': csrftoken
+                        }
+                    }).then(response => {
+                        if (!response.ok) {
+                            throw new Error('Network response was not ok');
+                        }
+                        return response.json();
+                    }).then(data => {
+                        if (data.success) {
+                            document.getElementById(`comment-${commentId}`).remove();
+                        }
+                    }).catch(error => {
+                        console.error('Fetch error:', error);
+                    });
+                });
+            }
         };
 
         commentSocket.onclose = function(e) {
@@ -219,6 +735,10 @@
                 console.log("Response data:", data);  // Debugging
                 // Clear the comment input
                 document.getElementById('commentText').value = '';
+                
+                // Hide the comment form and show the add comment button again
+                document.getElementById('comment-form').style.display = 'none';
+                document.getElementById('add-comment-btn').style.display = 'block';
 
                 // The WebSocket message will handle updating the comment list
             }).catch(error => {
@@ -251,6 +771,29 @@
                 });
             });
         });
+        
+        // Likes modal functionality
+        const viewLikesBtn = document.getElementById('view-likes-btn');
+        const likesModalOverlay = document.getElementById('likes-modal-overlay');
+        const closeLikesModal = document.getElementById('close-likes-modal');
+        
+        viewLikesBtn.addEventListener('click', function() {
+            likesModalOverlay.style.display = 'block';
+            document.body.style.overflow = 'hidden';
+        });
+        
+        closeLikesModal.addEventListener('click', function() {
+            likesModalOverlay.style.display = 'none';
+            document.body.style.overflow = 'auto';
+        });
+        
+        likesModalOverlay.addEventListener('click', function(e) {
+            if (e.target === likesModalOverlay) {
+                likesModalOverlay.style.display = 'none';
+                document.body.style.overflow = 'auto';
+            }
+        });
     });
 </script>
+
 {% endblock %}
