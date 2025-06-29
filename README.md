@@ -1,149 +1,116 @@
 # AddaGU (আড্ডাGU)
 
-AddaGU (আড্ডাGU) is a social media application designed exclusively for the students of Gauhati University. This platform fosters connectivity and interaction, enabling users to create, share, and engage with content while building a vibrant university community.
+> A secure social media platform exclusively for Gauhati University students
 
----
+[![Python](https://img.shields.io/badge/Python-3.8+-blue.svg)](https://www.python.org/)
+[![Django](https://img.shields.io/badge/Django-4.0+-green.svg)](https://www.djangoproject.com/)
+[![License](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-## Features
+AddaGU enables university students to connect, share content, and communicate through secure real-time messaging with end-to-end encryption.
 
-### User Authentication
-- Custom user model.
-- User registration and login.
-- Profile management.
+## ✨ Key Features
 
-### Posts
-- Create, view, edit, and delete posts.
-- Upload and share posts with text and images.
+- **🔐 Secure Messaging**: End-to-end encrypted chat with Fernet (AES-128 + HMAC-SHA256)
+- **📱 Real-time Updates**: Live notifications for posts, comments, and messages via WebSockets
+- **👤 User Management**: Custom authentication with profile management
+- **📝 Social Features**: Create, share, and interact with posts, comments, and likes
+- **🎨 Modern UI**: Responsive design built with Bootstrap 5
 
-### Comments
-- Add comments to posts.
-- Real-time updates for new comments using WebSockets.
-- Delete comments.
+## 🛠️ Technology Stack
 
-### Likes
-- Like and unlike posts.
-- Real-time updates for likes using WebSockets.
-- View the total likes on posts.
+| Component | Technology |
+|-----------|------------|
+| **Backend** | Django 4.0+, Django Channels |
+| **Frontend** | Django Templates, Bootstrap 5 |
+| **Database** | SQLite3 (Development) |
+| **Real-time** | WebSockets via Django Channels |
+| **Security** | Fernet Encryption, PBKDF2 Key Derivation |
 
-### Chat
-- Real-time chat functionality between users powered by WebSockets.
-- **🔐 End-to-end encryption** for secure messaging.
+## 🔐 Security Architecture
 
-### 🛡️ Security Features
+- **Encryption Algorithm**: Fernet symmetric encryption (AES-128 + HMAC-SHA256)
+- **Key Derivation**: PBKDF2 with SHA256, 100,000 iterations
+- **Access Control**: Message-level encryption ensuring only sender/receiver access
+- **Data Protection**: All chat messages encrypted at rest
 
-#### **Message Encryption**
-- **Algorithm**: Fernet symmetric encryption (AES-128 + HMAC-SHA256)
-- **All chat messages** are encrypted before being stored in the database
-- **User-specific encryption keys** derived from user IDs using PBKDF2 (100,000 iterations)
-- **Access control**: Only sender and receiver can decrypt and read messages
-- **Message authentication**: Built-in protection against tampering
-- **Transparent to users**: Chat interface works exactly as before with enhanced security
-
-#### **Key Management**
-- Master key configurable via environment variables for production
-- Secure key derivation using PBKDF2 with SHA256
-- Each user gets a unique encryption key
-- Cross-user message access completely blocked
-
-### Real-Time Features
-- Powered by Django Channels for WebSocket-based real-time updates:
-  - Instant updates for likes and comments.
-  - Live chat functionality with encryption.
-
-### Database
-- **SQLite**: Used as the database for development purposes.
-- **Encrypted storage**: All chat messages stored encrypted at rest.
-
----
-
-## Tech Stack
-
-### Backend
-- **Django**: Framework used for backend logic and REST APIs.
-- **Django Channels**: Enables real-time communication via WebSockets.
-- **Cryptography**: Provides Fernet encryption for secure messaging.
-
-### Frontend
-- Built using Django templates and Bootstrap 5
-
-### Database
-- **SQLite**: Lightweight database for storing user data, posts, comments, and encrypted messages.
-
----
-
-## Installation
+## 🚀 Quick Start
 
 ### Prerequisites
-- Python (3.x)
-- pip (Python package manager)
+- Python 3.8+
+- pip package manager
 
-### Steps
-1. Clone the repository:
+### Installation
+
+1. **Clone and Setup**
    ```bash
    git clone https://github.com/Bishal1234-ui/AddaGU.git
    cd AddaGU
-   ```
-
-2. Create and activate a virtual environment:
-   ```bash
    python -m venv env
-   source env/bin/activate  # On Windows: env\Scripts\activate
+   env\Scripts\activate  # Windows
+   # source env/bin/activate  # macOS/Linux
    ```
 
-3. Install dependencies:
+2. **Install Dependencies**
    ```bash
    pip install -r requirements.txt
    ```
 
-4. Apply migrations:
+3. **Database Setup**
    ```bash
    python manage.py migrate
    ```
 
-5. **Configure encryption (Optional for development):**
+4. **Environment Configuration** (Production)
    ```bash
-   # For production, set environment variable:
-   export CHAT_MASTER_KEY="your-super-secure-key-here"
+   # Set encryption key for production
+   set CHAT_MASTER_KEY=your-super-secure-key-here
    ```
 
-6. Run the development server ( in asgi ) :
+5. **Run Application**
    ```bash
    daphne -p 8001 GUBlogs.asgi:application
    ```
 
-7. Access the application:
-   Open your web browser and navigate to `http://127.0.0.1:8001/`.
+6. **Access Application**
+   Open http://127.0.0.1:8001/ in your browser
+
+## � Development
+
+### Project Structure
+```
+GUBlogs/
+├── blogs/          # Blog post functionality
+├── users/          # User management & authentication
+├── GUBlogs/        # Main project settings
+├── media/          # User uploaded content
+└── staticfiles/    # Static assets
+```
+
+### Testing Encryption
+1. Send a test message in chat
+2. Check database - messages appear as encrypted base64 strings
+3. Verify decryption works in chat interface
+
+## 📝 Contributing
+
+1. Fork the repository
+2. Create a feature branch (`git checkout -b feature/AmazingFeature`)
+3. Commit changes (`git commit -m 'Add AmazingFeature'`)
+4. Push to branch (`git push origin feature/AmazingFeature`)
+5. Open a Pull Request
+
+## 📄 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+## 🤝 Support
+
+For support and questions:
+- Create an [issue](https://github.com/Bishal1234-ui/AddaGU/issues)
+- Contact: [Your Contact Information]
 
 ---
 
-## 🔐 Security Implementation
-
-### Chat Encryption Details
-- **Encryption at Rest**: All messages are encrypted in the database using Fernet symmetric encryption
-- **Key Derivation**: PBKDF2 with SHA256, 100,000 iterations for computational hardening
-- **Access Control**: Messages can only be decrypted by sender and receiver
-- **Algorithm**: AES-128 in CBC mode with HMAC-SHA256 for authentication
-- **Zero User Impact**: Encryption is completely transparent to end users
-
-### Verification
-To verify encryption is working:
-1. Send a message in chat
-2. Check database - messages will appear as encrypted base64 strings
-3. View in chat interface - messages appear normally (auto-decrypted)
-
-### Production Deployment
-- Set `CHAT_MASTER_KEY` as environment variable
-- Ensure HTTPS is enabled for secure transport
-- All chat messages are automatically encrypted/decrypted
-
----
-
-## 🚀 What Makes AddaGU Secure?
-
-- **Privacy-First**: Messages are encrypted with industry-standard algorithms
-- **University-Focused**: Designed specifically for Gauhati University students
-- **Real-Time & Secure**: Live chat with end-to-end encryption
-- **Transparent Security**: Enhanced protection without compromising user experience
-- **Production-Ready**: Thoroughly tested encryption implementation
-
-Your conversations are protected with the same level of encryption used by major messaging platforms! 🔐✨
+<div align="center">
+<b>Built with ❤️ for Gauhati University students</b>
+</div>
