@@ -29,9 +29,9 @@ SECRET_KEY = "django-insecure-*jf67p6i+6w)*23-+$q61(s!3p&_monrs448*w!9ipox(8c2@w
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['https://74bb-2405-201-a80a-1069-d521-260c-3b8e-5996.ngrok-free.app', 'localhost', '127.0.0.1']
+ALLOWED_HOSTS = ['https://addagu.onrender.com', 'localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = [ 'https://74bb-2405-201-a80a-1069-d521-260c-3b8e-5996.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = [ 'https://addagu.onrender.com','https://74bb-2405-201-a80a-1069-d521-260c-3b8e-5996.ngrok-free.app']
 
 # Application definition
 
