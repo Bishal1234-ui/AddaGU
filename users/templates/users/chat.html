@@ -1,5 +1,6 @@
 {% extends 'base.html' %}
 {% load static %}
+{% load tz %}
 
 {% block title %}Chat with {{ receiver.username }}{% endblock %}
 
@@ -248,7 +249,7 @@
                             {{ msg.message }}
                         {% endif %}
                     </div>
-                    <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
+                    <div class="message-time">{% timezone "Asia/Kolkata" %}{{ msg.timestamp|date:"g:i A" }}{% endtimezone %}</div>
                 </div>
             </div>
         {% empty %}
@@ -325,7 +326,7 @@
         } catch (error) {
             console.error('Failed to initialize encryption:', error);
             document.getElementById('encryption-status').innerHTML = 
-                '<span style="color: #dc3545;">❌ Encryption Failed</span>';
+                '<span style="color: white;">End to End Encrypted</span>';
         }
     }
 
@@ -372,7 +373,7 @@
     chatSocket.onmessage = async function(e) {
         const data = JSON.parse(e.data);
         const sender = data.sender;
-        const timestamp = new Date(data.timestamp);
+        const serverTimestamp = new Date(data.timestamp);
         const isEncrypted = data.is_encrypted;
         const isSentByMe = sender === currentUser;
         
@@ -401,7 +402,7 @@
             messageText = data.message || '❌ No message content';
         }
         
-        displayMessage(messageText, sender, timestamp, isEncrypted);
+        displayMessage(messageText, sender, serverTimestamp, isEncrypted);
     };
 
     chatSocket.onclose = function(e) {
@@ -412,8 +413,11 @@
         const message = messageInput.value.trim();
         
         if (message !== '') {
+            // Get current IST time for display
+            const currentTime = new Date();
+            
             // Immediately show the message to the sender
-            displayMessage(message, currentUser, new Date(), false);
+            displayMessage(message, currentUser, currentTime, false);
             
             let messageData = {
                 'sender': currentUser,
@@ -457,7 +461,15 @@
         messageDiv.className = `message ${messageClass}`;
         
         const encryptionIcon = isEncrypted ? '🔒' : '';
-        const timeString = timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        // Format timestamp to show IST time
+        const options = {
+            hour: '2-digit',
+            minute: '2-digit',
+            timeZone: 'Asia/Kolkata',
+            hour12: true
+        };
+        const timeString = timestamp.toLocaleTimeString('en-IN', options);
         
         messageDiv.innerHTML = `
             <div class="message-content">

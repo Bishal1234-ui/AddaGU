@@ -19,15 +19,21 @@ class CustomUser(AbstractUser):
 class ChatMessage(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')
     receiver = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='received_messages')
-    message = models.TextField()  # This will store the encrypted message
+    message = models.TextField(blank=True, null=True)  # For plain text messages
+    encrypted_message_for_sender = models.TextField(blank=True, null=True)  # Encrypted message that sender can decrypt
+    encrypted_message_for_receiver = models.TextField(blank=True, null=True)  # Encrypted message that receiver can decrypt
     timestamp = models.DateTimeField(default=timezone.now)
+    is_encrypted = models.BooleanField(default=False)
     is_read = models.BooleanField(default=False)
 
     class Meta:
         ordering = ['timestamp']
 
     def __str__(self):
-        return f'{self.sender.username} to {self.receiver.username}: [Encrypted Message]'
+        if self.is_encrypted:
+            return f'{self.sender.username} to {self.receiver.username}: [Encrypted Message]'
+        else:
+            return f'{self.sender.username} to {self.receiver.username}: {self.message[:50]}...'
     
     def set_message(self, plain_message):
         """

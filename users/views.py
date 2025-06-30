@@ -126,25 +126,13 @@ def chat_view(request, username):
         Q(sender=receiver, receiver=request.user)
     ).order_by('timestamp')
     
-    # Decrypt messages for display
-    decrypted_messages = []
-    for msg in messages_queryset:
-        decrypted_message = {
-            'sender': msg.sender,
-            'receiver': msg.receiver,
-            'message': msg.get_message_for_user(request.user),  # Decrypt for current user
-            'timestamp': msg.timestamp,
-            'is_read': msg.is_read
-        }
-        decrypted_messages.append(decrypted_message)
-    
     # Mark messages as read
     ChatMessage.objects.filter(sender=receiver, receiver=request.user, is_read=False).update(is_read=True)
     
     context = {
         'receiver': receiver,
         'room_name': room_name,
-        'messages': decrypted_messages,  # Pass decrypted messages
+        'messages': messages_queryset,  # Pass raw messages with all fields
     }
     return render(request, 'users/chat.html', context)
 

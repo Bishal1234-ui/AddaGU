@@ -126,38 +126,74 @@ class ChatConsumer(AsyncWebsocketConsumer):
 
     async def receive(self, text_data):
         data = json.loads(text_data)
-        message = data['message']
         sender_username = data['sender']
         receiver_username = data['receiver']
+        is_encrypted = data.get('is_encrypted', False)
+        
+        # Get current timestamp in IST
+        current_time = timezone.now()
+        
+        if is_encrypted:
+            # Handle encrypted message
+            encrypted_message_for_sender = data.get('encrypted_message_for_sender')
+            encrypted_message_for_receiver = data.get('encrypted_message_for_receiver')
+            
+            # Save encrypted message to database
+            await self.save_encrypted_message(
+                sender_username, 
+                receiver_username, 
+                encrypted_message_for_sender,
+                encrypted_message_for_receiver,
+                current_time
+            )
+            
+            # Send encrypted message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'sender': sender_username,
+                    'receiver': receiver_username,
+                    'encrypted_message_for_sender': encrypted_message_for_sender,
+                    'encrypted_message_for_receiver': encrypted_message_for_receiver,
+                    'is_encrypted': True,
+                    'timestamp': current_time.isoformat()
+                }
+            )
+        else:
+            # Handle plain text message
+            message = data['message']
+            
+            # Save message to database
+            await self.save_message(sender_username, receiver_username, message, current_time)
 
-        # Save message to database
-        await self.save_message(sender_username, receiver_username, message)
-
-        # Send message to room group
-        await self.channel_layer.group_send(
-            self.room_group_name,
-            {
-                'type': 'chat_message',
-                'message': message,
-                'sender': sender_username,
-                'timestamp': timezone.now().strftime('%Y-%m-%d %H:%M:%S')
-            }
-        )
+            # Send message to room group
+            await self.channel_layer.group_send(
+                self.room_group_name,
+                {
+                    'type': 'chat_message',
+                    'message': message,
+                    'sender': sender_username,
+                    'receiver': receiver_username,
+                    'is_encrypted': False,
+                    'timestamp': current_time.isoformat()
+                }
+            )
 
     async def chat_message(self, event):
-        message = event['message']
-        sender = event['sender']
-        timestamp = event['timestamp']
-
-        # Send message to WebSocket
+        # Send message to WebSocket with all the data
         await self.send(text_data=json.dumps({
-            'message': message,
-            'sender': sender,
-            'timestamp': timestamp
+            'message': event.get('message', ''),
+            'sender': event['sender'],
+            'receiver': event['receiver'],
+            'timestamp': event['timestamp'],
+            'is_encrypted': event['is_encrypted'],
+            'encrypted_message_for_sender': event.get('encrypted_message_for_sender', ''),
+            'encrypted_message_for_receiver': event.get('encrypted_message_for_receiver', '')
         }))
 
     @database_sync_to_async
-    def save_message(self, sender_username, receiver_username, message):
+    def save_message(self, sender_username, receiver_username, message, timestamp):
         from django.contrib.auth import get_user_model
         from users.models import ChatMessage
         
@@ -165,11 +201,33 @@ class ChatConsumer(AsyncWebsocketConsumer):
         sender = User.objects.get(username=sender_username)
         receiver = User.objects.get(username=receiver_username)
         
-        # Create chat message with encryption
+        # Create chat message (plain text)
         chat_message = ChatMessage(
             sender=sender,
-            receiver=receiver
+            receiver=receiver,
+            message=message,
+            timestamp=timestamp,
+            is_encrypted=False
         )
-        chat_message.set_message(message)  # This will encrypt the message
+        chat_message.save()
+
+    @database_sync_to_async
+    def save_encrypted_message(self, sender_username, receiver_username, encrypted_for_sender, encrypted_for_receiver, timestamp):
+        from django.contrib.auth import get_user_model
+        from users.models import ChatMessage
+        
+        User = get_user_model()
+        sender = User.objects.get(username=sender_username)
+        receiver = User.objects.get(username=receiver_username)
+        
+        # Create encrypted chat message
+        chat_message = ChatMessage(
+            sender=sender,
+            receiver=receiver,
+            encrypted_message_for_sender=encrypted_for_sender,
+            encrypted_message_for_receiver=encrypted_for_receiver,
+            timestamp=timestamp,
+            is_encrypted=True
+        )
         chat_message.save()
 

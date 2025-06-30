@@ -31,7 +31,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['addagu.onrender.com' ,'https://addagu.onrender.com', 'localhost', '127.0.0.1']
 
-CSRF_TRUSTED_ORIGINS = [ 'addagu.onrender.com' ,'https://addagu.onrender.com','https://74bb-2405-201-a80a-1069-d521-260c-3b8e-5996.ngrok-free.app']
+CSRF_TRUSTED_ORIGINS = ['https://addagu.onrender.com','https://74bb-2405-201-a80a-1069-d521-260c-3b8e-5996.ngrok-free.app']
 
 # Application definition
 
@@ -126,7 +126,7 @@ AUTH_USER_MODEL = 'users.CustomUser'
 
 LANGUAGE_CODE = "en-us"
 
-TIME_ZONE = "UTC"
+TIME_ZONE = "Asia/Kolkata"
 
 USE_I18N = True
 
