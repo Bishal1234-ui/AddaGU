@@ -5,6 +5,7 @@ from . import views
 urlpatterns = [
     path('signup/', views.signup_view, name='signup'),
     path('login/', views.login_view, name='login'),
+    path('about/', views.about_view, name='about'),
     path('profile/', views.profile_view, name='profile'),
     path('edit_profile/', views.edit_profile_view, name='edit_profile'),
     path('profile/<str:username>/', views.user_profile_view, name='user_profile'),
@@ -12,6 +13,8 @@ urlpatterns = [
     path('profile/<str:username>/followers/', views.followers_list_view, name='followers_list'),
     path('profile/<str:username>/following/', views.following_list_view, name='following_list'),
     path('delete_post/<int:pk>/', views.delete_post_view, name='delete_post'),
+    path('chat/', views.chat_list_view, name='chat_list'),
     path('chat/<str:username>/', views.chat_view, name='chat'),
+    path('api/unread-count/', views.get_unread_count, name='get_unread_count'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]

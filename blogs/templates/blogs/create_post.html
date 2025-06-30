@@ -1,52 +1,512 @@
 {% extends 'base.html' %}
 {% load crispy_forms_tags %}
-{% block title %}Create Post{% endblock %}
+{% block title %}Create Post - আড্ডা GU{% endblock %}
+
 {% block content %}
-<div class="container mt-5">
-    <div class="row justify-content-center">
-        <div class="col-md-8 col-lg-6">
-            <div class="card shadow-sm">
-                <div class="card-header bg-secondary text-white">
-                    <h3 class="mb-0 text-center">Create a New Blog Post</h3>
+<div class="create-post-container">
+    <!-- Header Section -->
+    <div class="create-header">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="header-content text-center">
+                        <div class="header-icon">
+                            <i class="fas fa-pen-fancy"></i>
+                        </div>
+                        <h1 class="header-title">Share Your Story</h1>
+                        <p class="header-subtitle">Create a new blog post and share your thoughts with the আড্ডা GU community</p>
+                    </div>
                 </div>
-                <div class="card-body">
-                    <form method="post" enctype="multipart/form-data">
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Form Section -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                <div class="create-form-card">
+                    <form method="post" enctype="multipart/form-data" class="create-post-form">
                         {% csrf_token %}
-                        {{ form|crispy }}
-                        <div class="form-group mt-3">
-                            <label for="imagePreview">Image Preview</label>
-                            <div>
-                                <img id="imagePreview" src="#" alt="Image Preview" class="img-thumbnail" style="display: none; max-width: 100%; height: auto;">
+                        
+                        <!-- Title Field -->
+                        <div class="form-group-modern">
+                            <label for="{{ form.title.id_for_label }}" class="form-label">
+                                <i class="fas fa-heading me-2"></i>Post Title
+                            </label>
+                            <div class="form-control-wrapper">
+                                {{ form.title }}
+                                <div class="form-border"></div>
+                            </div>
+                            {% if form.title.help_text %}
+                                <small class="form-help">{{ form.title.help_text }}</small>
+                            {% endif %}
+                        </div>
+
+                        <!-- Content Field -->
+                        <div class="form-group-modern">
+                            <label for="{{ form.content.id_for_label }}" class="form-label">
+                                <i class="fas fa-align-left me-2"></i>Content
+                            </label>
+                            <div class="form-control-wrapper">
+                                {{ form.content }}
+                                <div class="form-border"></div>
+                            </div>
+                            <small class="form-help">Share your thoughts, experiences, or ideas with the community</small>
+                        </div>
+
+                        <!-- Image Upload Field -->
+                        <div class="form-group-modern">
+                            <label for="{{ form.blogimage.id_for_label }}" class="form-label">
+                                <i class="fas fa-image me-2"></i>Featured Image
+                            </label>
+                            <div class="image-upload-area">
+                                <div class="upload-zone" id="uploadZone">
+                                    <div class="upload-icon">
+                                        <i class="fas fa-cloud-upload-alt"></i>
+                                    </div>
+                                    <p class="upload-text">
+                                        <strong>Click to upload</strong> or drag and drop<br>
+                                        <small>PNG, JPG, GIF up to 10MB</small>
+                                    </p>
+                                    {{ form.blogimage }}
+                                </div>
+                                
+                                <!-- Image Preview -->
+                                <div class="image-preview-container" id="imagePreviewContainer" style="display: none;">
+                                    <div class="image-preview-wrapper">
+                                        <img id="imagePreview" src="#" alt="Preview" class="image-preview">
+                                        <button type="button" class="remove-image-btn" id="removeImage">
+                                            <i class="fas fa-times"></i>
+                                        </button>
+                                    </div>
+                                    <p class="preview-filename" id="previewFilename"></p>
+                                </div>
                             </div>
                         </div>
-                        <button type="submit" class="btn btn-primary btn-block mt-3">Create Post</button>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <button type="button" class="btn btn-secondary btn-cancel" onclick="history.back()">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </button>
+                            <button type="submit" class="btn btn-primary btn-create">
+                                <i class="fas fa-plus-circle me-2"></i>Create Post
+                            </button>
+                        </div>
                     </form>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<style>
+/* Create Post Styles */
+.create-post-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.create-header {
+    margin-bottom: 3rem;
+}
+
+.header-content {
+    padding: 2rem 0;
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.header-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.create-form-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    backdrop-filter: blur(10px);
+}
+
+.form-group-modern {
+    margin-bottom: 2.5rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.8rem;
+    display: block;
+    font-size: 1rem;
+}
+
+.form-label i {
+    color: #667eea;
+}
+
+.form-control-wrapper {
+    position: relative;
+}
+
+.form-control-wrapper input,
+.form-control-wrapper textarea {
+    width: 100%;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    resize: vertical;
+}
+
+.form-control-wrapper textarea {
+    min-height: 150px;
+    font-family: inherit;
+}
+
+.form-control-wrapper input:focus,
+.form-control-wrapper textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.form-help {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+/* Image Upload Styles */
+.image-upload-area {
+    position: relative;
+}
+
+.upload-zone {
+    border: 2px dashed #d1d3d4;
+    border-radius: 12px;
+    padding: 3rem 2rem;
+    text-align: center;
+    background: #f8f9fa;
+    transition: all 0.3s ease;
+    cursor: pointer;
+    position: relative;
+}
+
+.upload-zone:hover {
+    border-color: #667eea;
+    background: #f0f2ff;
+}
+
+.upload-zone.dragover {
+    border-color: #667eea;
+    background: #e8f0ff;
+    transform: scale(1.02);
+}
+
+.upload-icon {
+    width: 60px;
+    height: 60px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1rem;
+}
+
+.upload-icon i {
+    font-size: 1.5rem;
+    color: white;
+}
+
+.upload-text {
+    margin: 0;
+    color: #6c757d;
+    line-height: 1.6;
+}
+
+.upload-text strong {
+    color: #667eea;
+}
+
+.upload-zone input[type="file"] {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    opacity: 0;
+    cursor: pointer;
+}
+
+.image-preview-container {
+    margin-top: 1.5rem;
+}
+
+.image-preview-wrapper {
+    position: relative;
+    display: inline-block;
+    border-radius: 12px;
+    overflow: hidden;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.1);
+}
+
+.image-preview {
+    max-width: 100%;
+    max-height: 300px;
+    border-radius: 12px;
+    display: block;
+}
+
+.remove-image-btn {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    width: 30px;
+    height: 30px;
+    background: rgba(231, 76, 60, 0.9);
+    border: none;
+    border-radius: 50%;
+    color: white;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: all 0.3s ease;
+}
+
+.remove-image-btn:hover {
+    background: #e74c3c;
+    transform: scale(1.1);
+}
+
+.preview-filename {
+    margin-top: 0.5rem;
+    font-size: 0.875rem;
+    color: #6c757d;
+    text-align: center;
+}
+
+/* Action Buttons */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    margin-top: 3rem;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+}
+
+.btn-create {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-width: 150px;
+}
+
+.btn-create:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .create-form-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .upload-zone {
+        padding: 2rem 1rem;
+    }
+}
+
+@media (max-width: 576px) {
+    .create-post-container {
+        padding-top: 1rem;
+    }
+    
+    .header-content {
+        padding: 1rem 0;
+    }
+    
+    .header-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .header-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .header-title {
+        font-size: 1.8rem;
+    }
+}
+</style>
+
 <script>
 document.addEventListener("DOMContentLoaded", function() {
     const fileInput = document.querySelector('input[type="file"]');
+    const uploadZone = document.getElementById('uploadZone');
     const imagePreview = document.getElementById('imagePreview');
-    if(fileInput) {
-        fileInput.addEventListener('change', function(event) {
-            const file = event.target.files[0];
-            if(file) {
-                imagePreview.src = URL.createObjectURL(file);
-                imagePreview.style.display = "block";
-            } else {
-                imagePreview.style.display = "none";
+    const imagePreviewContainer = document.getElementById('imagePreviewContainer');
+    const previewFilename = document.getElementById('previewFilename');
+    const removeImageBtn = document.getElementById('removeImage');
+
+    // File input change handler
+    if (fileInput) {
+        fileInput.addEventListener('change', handleFileSelect);
+        
+        // Drag and drop handlers
+        uploadZone.addEventListener('dragover', handleDragOver);
+        uploadZone.addEventListener('dragleave', handleDragLeave);
+        uploadZone.addEventListener('drop', handleFileDrop);
+    }
+
+    // Remove image handler
+    if (removeImageBtn) {
+        removeImageBtn.addEventListener('click', removeImage);
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            displayImagePreview(file);
+        }
+    }
+
+    function handleDragOver(event) {
+        event.preventDefault();
+        uploadZone.classList.add('dragover');
+    }
+
+    function handleDragLeave(event) {
+        event.preventDefault();
+        uploadZone.classList.remove('dragover');
+    }
+
+    function handleFileDrop(event) {
+        event.preventDefault();
+        uploadZone.classList.remove('dragover');
+        
+        const files = event.dataTransfer.files;
+        if (files.length > 0) {
+            const file = files[0];
+            if (file.type.startsWith('image/')) {
+                fileInput.files = files;
+                displayImagePreview(file);
+            }
+        }
+    }
+
+    function displayImagePreview(file) {
+        const reader = new FileReader();
+        reader.onload = function(e) {
+            imagePreview.src = e.target.result;
+            previewFilename.textContent = file.name;
+            uploadZone.style.display = 'none';
+            imagePreviewContainer.style.display = 'block';
+        };
+        reader.readAsDataURL(file);
+    }
+
+    function removeImage() {
+        fileInput.value = '';
+        imagePreview.src = '#';
+        previewFilename.textContent = '';
+        uploadZone.style.display = 'block';
+        imagePreviewContainer.style.display = 'none';
+    }
+
+    // Form validation
+    const form = document.querySelector('.create-post-form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            const title = document.querySelector('input[name="title"]').value.trim();
+            const content = document.querySelector('textarea[name="content"]').value.trim();
+            
+            if (!title || !content) {
+                event.preventDefault();
+                alert('Please fill in both title and content fields.');
+                return false;
             }
         });
     }
 });
 </script>
-<style>
-    #imagePreview {
-      max-width: 150px;
-      height: auto;
-    }
-  </style>
 {% endblock %}

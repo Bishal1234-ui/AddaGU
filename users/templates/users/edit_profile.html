@@ -1,10 +1,718 @@
 {% extends 'base.html' %}
-{% block title %}Edit Profile{% endblock %}
+{% block title %}Edit Profile - আড্ডা GU{% endblock %}
+
 {% block content %}
-    <h2>Edit Profile</h2>
-    <form method="post" enctype="multipart/form-data">
-        {% csrf_token %}
-        {{ form.as_p }}
-        <button type="submit" class="btn btn-primary mt-3">Save changes</button>
-    </form>
+<div class="edit-profile-container">
+    <!-- Header Section -->
+    <div class="profile-header">
+        <div class="container">
+            <div class="row justify-content-center">
+                <div class="col-lg-8">
+                    <div class="header-content text-center">
+                        <div class="header-icon">
+                            <i class="fas fa-user-edit"></i>
+                        </div>
+                        <h1 class="header-title">Edit Your Profile</h1>
+                        <p class="header-subtitle">Update your information and customize your আড্ডা GU profile</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Main Content -->
+    <div class="container">
+        <div class="row justify-content-center">
+            <div class="col-lg-8 col-xl-7">
+                <div class="profile-form-card">
+                    <form method="post" enctype="multipart/form-data" class="edit-profile-form">
+                        {% csrf_token %}
+                        
+                        <!-- Profile Picture Section -->
+                        <div class="profile-picture-section">
+                            <div class="current-avatar">
+                                {% if user.profile_picture %}
+                                    <img id="currentAvatar" src="{{ user.profile_picture.url }}" alt="Current Profile Picture" class="avatar-img">
+                                {% else %}
+                                    <div id="currentAvatar" class="avatar-placeholder">
+                                        <i class="fas fa-user"></i>
+                                        <span>{{ user.username.0|upper }}</span>
+                                    </div>
+                                {% endif %}
+                                <div class="avatar-overlay">
+                                    <i class="fas fa-camera"></i>
+                                </div>
+                            </div>
+                            
+                            <div class="avatar-upload">
+                                <label for="{{ form.profile_picture.id_for_label }}" class="upload-btn">
+                                    <i class="fas fa-upload me-2"></i>Change Photo
+                                </label>
+                                {{ form.profile_picture }}
+                                <small class="upload-help">Recommended: Square image, max 5MB</small>
+                            </div>
+                        </div>
+
+                        <!-- Form Fields -->
+                        <div class="form-fields">
+                            <!-- Username Field -->
+                            <div class="form-group-modern">
+                                <label for="{{ form.username.id_for_label }}" class="form-label">
+                                    <i class="fas fa-at me-2"></i>Username
+                                </label>
+                                <div class="form-control-wrapper">
+                                    {{ form.username }}
+                                    <div class="form-border"></div>
+                                </div>
+                                {% if form.username.help_text %}
+                                    <small class="form-help">{{ form.username.help_text }}</small>
+                                {% endif %}
+                                {% if form.username.errors %}
+                                    <div class="form-errors">
+                                        {% for error in form.username.errors %}
+                                            <small class="error-text">{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Email Field -->
+                            <div class="form-group-modern">
+                                <label for="{{ form.email.id_for_label }}" class="form-label">
+                                    <i class="fas fa-envelope me-2"></i>Email Address
+                                </label>
+                                <div class="form-control-wrapper">
+                                    {{ form.email }}
+                                    <div class="form-border"></div>
+                                </div>
+                                {% if form.email.help_text %}
+                                    <small class="form-help">{{ form.email.help_text }}</small>
+                                {% endif %}
+                                {% if form.email.errors %}
+                                    <div class="form-errors">
+                                        {% for error in form.email.errors %}
+                                            <small class="error-text">{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+
+                            <!-- Bio Field -->
+                            <div class="form-group-modern">
+                                <label for="{{ form.bio.id_for_label }}" class="form-label">
+                                    <i class="fas fa-info-circle me-2"></i>Bio
+                                </label>
+                                <div class="form-control-wrapper">
+                                    {{ form.bio }}
+                                    <div class="form-border"></div>
+                                    <div class="char-counter">
+                                        <span id="charCount">0</span>/500 characters
+                                    </div>
+                                </div>
+                                <small class="form-help">Tell others about yourself. What makes you unique?</small>
+                                {% if form.bio.errors %}
+                                    <div class="form-errors">
+                                        {% for error in form.bio.errors %}
+                                            <small class="error-text">{{ error }}</small>
+                                        {% endfor %}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+
+                        <!-- Action Buttons -->
+                        <div class="form-actions">
+                            <a href="{% url 'profile' %}" class="btn btn-secondary btn-cancel">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary btn-save">
+                                <i class="fas fa-check me-2"></i>Save Changes
+                            </button>
+                        </div>
+                    </form>
+                </div>
+
+                <!-- Account Settings Card -->
+                <div class="settings-card">
+                    <h3 class="settings-title">
+                        <i class="fas fa-cog me-2"></i>Account Settings
+                    </h3>
+                    <div class="settings-grid">
+                        <div class="setting-item">
+                            <div class="setting-icon">
+                                <i class="fas fa-key"></i>
+                            </div>
+                            <div class="setting-info">
+                                <h4>Change Password</h4>
+                                <p>Update your password to keep your account secure</p>
+                            </div>
+                            <a href="#" class="setting-action">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-icon">
+                                <i class="fas fa-bell"></i>
+                            </div>
+                            <div class="setting-info">
+                                <h4>Notifications</h4>
+                                <p>Manage your notification preferences</p>
+                            </div>
+                            <a href="#" class="setting-action">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                        
+                        <div class="setting-item">
+                            <div class="setting-icon">
+                                <i class="fas fa-shield-alt"></i>
+                            </div>
+                            <div class="setting-info">
+                                <h4>Privacy</h4>
+                                <p>Control who can see your posts and information</p>
+                            </div>
+                            <a href="#" class="setting-action">
+                                <i class="fas fa-chevron-right"></i>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+/* Edit Profile Styles */
+.edit-profile-container {
+    min-height: 100vh;
+    background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+    padding-top: 2rem;
+    padding-bottom: 4rem;
+}
+
+.profile-header {
+    margin-bottom: 3rem;
+}
+
+.header-content {
+    padding: 2rem 0;
+}
+
+.header-icon {
+    width: 80px;
+    height: 80px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 1.5rem;
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.3);
+}
+
+.header-icon i {
+    font-size: 2rem;
+    color: white;
+}
+
+.header-title {
+    font-size: 2.5rem;
+    font-weight: 700;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    -webkit-background-clip: text;
+    -webkit-text-fill-color: transparent;
+    background-clip: text;
+    margin-bottom: 1rem;
+}
+
+.header-subtitle {
+    font-size: 1.1rem;
+    color: #6c757d;
+    max-width: 600px;
+    margin: 0 auto;
+    line-height: 1.6;
+}
+
+.profile-form-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    padding: 3rem;
+    margin-bottom: 2rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+/* Profile Picture Section */
+.profile-picture-section {
+    text-align: center;
+    margin-bottom: 3rem;
+    padding-bottom: 2rem;
+    border-bottom: 1px solid #e9ecef;
+}
+
+.current-avatar {
+    position: relative;
+    display: inline-block;
+    margin-bottom: 1.5rem;
+}
+
+.avatar-img {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 4px solid #667eea;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-placeholder {
+    width: 120px;
+    height: 120px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: white;
+    font-size: 2.5rem;
+    font-weight: 700;
+    border: 4px solid #667eea;
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.2);
+}
+
+.avatar-placeholder i {
+    display: none;
+}
+
+.avatar-overlay {
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background: rgba(0, 0, 0, 0.5);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    opacity: 0;
+    transition: opacity 0.3s ease;
+    cursor: pointer;
+}
+
+.current-avatar:hover .avatar-overlay {
+    opacity: 1;
+}
+
+.avatar-overlay i {
+    color: white;
+    font-size: 1.5rem;
+}
+
+.avatar-upload {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0.5rem;
+}
+
+.upload-btn {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    border: none;
+    cursor: pointer;
+    font-weight: 600;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+}
+
+.upload-btn:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+    color: white;
+}
+
+.avatar-upload input[type="file"] {
+    display: none;
+}
+
+.upload-help {
+    color: #6c757d;
+    font-size: 0.875rem;
+}
+
+/* Form Fields */
+.form-fields {
+    margin-bottom: 2rem;
+}
+
+.form-group-modern {
+    margin-bottom: 2rem;
+}
+
+.form-label {
+    font-weight: 600;
+    color: #2c3e50;
+    margin-bottom: 0.8rem;
+    display: block;
+    font-size: 1rem;
+}
+
+.form-label i {
+    color: #667eea;
+}
+
+.form-control-wrapper {
+    position: relative;
+}
+
+.form-control-wrapper input,
+.form-control-wrapper textarea {
+    width: 100%;
+    border: 2px solid #e9ecef;
+    border-radius: 12px;
+    padding: 1rem 1.25rem;
+    font-size: 1rem;
+    transition: all 0.3s ease;
+    background: #f8f9fa;
+    resize: vertical;
+}
+
+.form-control-wrapper textarea {
+    min-height: 120px;
+    font-family: inherit;
+}
+
+.form-control-wrapper input:focus,
+.form-control-wrapper textarea:focus {
+    outline: none;
+    border-color: #667eea;
+    background: white;
+    box-shadow: 0 0 0 3px rgba(102, 126, 234, 0.1);
+}
+
+.char-counter {
+    position: absolute;
+    bottom: 10px;
+    right: 15px;
+    font-size: 0.75rem;
+    color: #6c757d;
+    background: rgba(255, 255, 255, 0.9);
+    padding: 2px 6px;
+    border-radius: 4px;
+}
+
+.form-help {
+    color: #6c757d;
+    font-size: 0.875rem;
+    margin-top: 0.5rem;
+    display: block;
+}
+
+.form-errors {
+    margin-top: 0.5rem;
+}
+
+.error-text {
+    color: #e74c3c;
+    font-size: 0.875rem;
+    display: block;
+}
+
+/* Action Buttons */
+.form-actions {
+    display: flex;
+    gap: 1rem;
+    justify-content: flex-end;
+    padding-top: 2rem;
+    border-top: 1px solid #e9ecef;
+}
+
+.btn {
+    padding: 0.75rem 2rem;
+    border-radius: 25px;
+    font-weight: 600;
+    border: none;
+    cursor: pointer;
+    transition: all 0.3s ease;
+    text-decoration: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+}
+
+.btn-cancel {
+    background: #6c757d;
+    color: white;
+}
+
+.btn-cancel:hover {
+    background: #5a6268;
+    transform: translateY(-2px);
+    color: white;
+}
+
+.btn-save {
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    color: white;
+    min-width: 150px;
+}
+
+.btn-save:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 30px rgba(102, 126, 234, 0.4);
+}
+
+/* Settings Card */
+.settings-card {
+    background: white;
+    border-radius: 20px;
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.1);
+    padding: 2.5rem;
+    border: 1px solid rgba(0, 0, 0, 0.05);
+}
+
+.settings-title {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2c3e50;
+    margin-bottom: 2rem;
+    display: flex;
+    align-items: center;
+}
+
+.settings-title i {
+    color: #667eea;
+}
+
+.settings-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 1rem;
+}
+
+.setting-item {
+    display: flex;
+    align-items: center;
+    padding: 1.5rem;
+    border: 2px solid #f8f9fa;
+    border-radius: 12px;
+    transition: all 0.3s ease;
+    cursor: pointer;
+}
+
+.setting-item:hover {
+    border-color: #667eea;
+    background: #f8f9ff;
+    transform: translateX(5px);
+}
+
+.setting-icon {
+    width: 50px;
+    height: 50px;
+    background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-right: 1rem;
+    flex-shrink: 0;
+}
+
+.setting-icon i {
+    color: white;
+    font-size: 1.2rem;
+}
+
+.setting-info {
+    flex: 1;
+}
+
+.setting-info h4 {
+    margin: 0 0 0.25rem 0;
+    font-size: 1.1rem;
+    font-weight: 600;
+    color: #2c3e50;
+}
+
+.setting-info p {
+    margin: 0;
+    color: #6c757d;
+    font-size: 0.9rem;
+}
+
+.setting-action {
+    color: #6c757d;
+    font-size: 1.2rem;
+    text-decoration: none;
+    transition: color 0.3s ease;
+}
+
+.setting-action:hover {
+    color: #667eea;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .profile-form-card,
+    .settings-card {
+        margin: 1rem;
+        padding: 2rem 1.5rem;
+    }
+    
+    .header-title {
+        font-size: 2rem;
+    }
+    
+    .form-actions {
+        flex-direction: column;
+    }
+    
+    .form-actions .btn {
+        width: 100%;
+        margin-bottom: 0.5rem;
+    }
+    
+    .settings-grid {
+        gap: 0.5rem;
+    }
+    
+    .setting-item {
+        padding: 1rem;
+    }
+    
+    .setting-icon {
+        width: 40px;
+        height: 40px;
+    }
+}
+
+@media (max-width: 576px) {
+    .edit-profile-container {
+        padding-top: 1rem;
+    }
+    
+    .header-content {
+        padding: 1rem 0;
+    }
+    
+    .header-icon {
+        width: 60px;
+        height: 60px;
+    }
+    
+    .header-icon i {
+        font-size: 1.5rem;
+    }
+    
+    .header-title {
+        font-size: 1.8rem;
+    }
+    
+    .avatar-img,
+    .avatar-placeholder {
+        width: 100px;
+        height: 100px;
+    }
+    
+    .avatar-placeholder {
+        font-size: 2rem;
+    }
+}
+</style>
+
+<script>
+document.addEventListener("DOMContentLoaded", function() {
+    // Profile picture upload handling
+    const fileInput = document.querySelector('input[type="file"]');
+    const currentAvatar = document.getElementById('currentAvatar');
+    const uploadBtn = document.querySelector('.upload-btn');
+    
+    if (fileInput && uploadBtn) {
+        uploadBtn.addEventListener('click', function(e) {
+            e.preventDefault();
+            fileInput.click();
+        });
+        
+        fileInput.addEventListener('change', function(event) {
+            const file = event.target.files[0];
+            if (file) {
+                const reader = new FileReader();
+                reader.onload = function(e) {
+                    if (currentAvatar.tagName === 'IMG') {
+                        currentAvatar.src = e.target.result;
+                    } else {
+                        // Replace placeholder with image
+                        const newImg = document.createElement('img');
+                        newImg.id = 'currentAvatar';
+                        newImg.src = e.target.result;
+                        newImg.alt = 'Profile Picture';
+                        newImg.className = 'avatar-img';
+                        currentAvatar.parentNode.replaceChild(newImg, currentAvatar);
+                    }
+                };
+                reader.readAsDataURL(file);
+            }
+        });
+    }
+    
+    // Character counter for bio field
+    const bioField = document.querySelector('textarea[name="bio"]');
+    const charCount = document.getElementById('charCount');
+    
+    if (bioField && charCount) {
+        function updateCharCount() {
+            const count = bioField.value.length;
+            charCount.textContent = count;
+            
+            if (count > 450) {
+                charCount.style.color = '#e74c3c';
+            } else if (count > 400) {
+                charCount.style.color = '#f39c12';
+            } else {
+                charCount.style.color = '#6c757d';
+            }
+        }
+        
+        // Initial count
+        updateCharCount();
+        
+        // Update on input
+        bioField.addEventListener('input', updateCharCount);
+        bioField.addEventListener('paste', function() {
+            setTimeout(updateCharCount, 10);
+        });
+    }
+    
+    // Form validation
+    const form = document.querySelector('.edit-profile-form');
+    if (form) {
+        form.addEventListener('submit', function(event) {
+            const username = document.querySelector('input[name="username"]').value.trim();
+            const email = document.querySelector('input[name="email"]').value.trim();
+            
+            if (!username || !email) {
+                event.preventDefault();
+                alert('Please fill in both username and email fields.');
+                return false;
+            }
+            
+            // Email validation
+            const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+            if (!emailRegex.test(email)) {
+                event.preventDefault();
+                alert('Please enter a valid email address.');
+                return false;
+            }
+        });
+    }
+});
+</script>
 {% endblock %}

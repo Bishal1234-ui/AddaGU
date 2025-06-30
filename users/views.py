@@ -40,6 +40,12 @@ def login_view(request):
     return render(request, 'users/login.html', {'form':form})
 
 
+def about_view(request):
+    """
+    About Us page view - shows information about আড্ডা GU
+    """
+    return render(request, 'users/about.html')
+
 
 # create the profile vieew
 @login_required
@@ -135,4 +141,30 @@ def chat_view(request, username):
         'messages': messages_queryset,  # Pass raw messages with all fields
     }
     return render(request, 'users/chat.html', context)
+
+@login_required
+def chat_list_view(request):
+    """
+    Show all conversations for the current user
+    """
+    from datetime import date, timedelta
+    
+    conversations = request.user.get_conversations()
+    
+    context = {
+        'conversations': conversations,
+        'today': date.today(),
+        'yesterday': date.today() - timedelta(days=1),
+    }
+    return render(request, 'users/chat_list.html', context)
+
+@login_required
+def get_unread_count(request):
+    """
+    AJAX endpoint to get unread message count
+    """
+    from django.http import JsonResponse
+    
+    unread_count = request.user.get_total_unread_count()
+    return JsonResponse({'unread_count': unread_count})
 

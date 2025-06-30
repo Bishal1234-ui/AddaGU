@@ -88,6 +88,38 @@
             transform: scale(1.1);
         }
         
+        /* Chat notification badge */
+        .chat-badge {
+            position: absolute;
+            top: -5px;
+            right: -5px;
+            background: linear-gradient(135deg, #e74c3c 0%, #c0392b 100%);
+            color: white;
+            border-radius: 50%;
+            width: 18px;
+            height: 18px;
+            font-size: 0.65rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 600;
+            border: 2px solid white;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.2);
+            animation: pulse 2s infinite;
+        }
+        
+        @keyframes pulse {
+            0% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0.7);
+            }
+            70% {
+                box-shadow: 0 0 0 6px rgba(231, 76, 60, 0);
+            }
+            100% {
+                box-shadow: 0 0 0 0 rgba(231, 76, 60, 0);
+            }
+        }
+        
         /* Footer */
         footer {
             background: linear-gradient(135deg, #2c3e50 0%, #34495e 100%) !important;
@@ -118,6 +150,162 @@
             .nav-link {
                 margin: 2px 0 !important;
             }
+            
+            /* Tablet Footer Adjustments */
+            footer {
+                padding: 2rem 0 !important;
+                margin-top: 2rem !important;
+            }
+            
+            footer .row.text-center.mb-4 {
+                display: none !important;
+            }
+            
+            footer .social-links {
+                margin-bottom: 1.5rem !important;
+            }
+        }
+        
+        /* Mobile navbar - Instagram style */
+        @media (max-width: 576px) {
+            .navbar {
+                padding: 0.5rem 0 !important;
+            }
+            
+            .navbar-brand {
+                display: none !important;
+            }
+            
+            .navbar-toggler {
+                display: none !important;
+            }
+            
+            .navbar-collapse {
+                display: flex !important;
+                justify-content: center !important;
+                width: 100% !important;
+            }
+            
+            .navbar-nav {
+                flex-direction: row !important;
+                align-items: center !important;
+                justify-content: space-evenly !important;
+                width: 100% !important;
+                max-width: 400px !important;
+                margin: 0 auto !important;
+            }
+            
+            .nav-item {
+                margin: 0 !important;
+                flex: 1 !important;
+                display: flex !important;
+                justify-content: center !important;
+            }
+            
+            .nav-item.ms-2 {
+                margin: 0 !important;
+            }
+            
+            .nav-link {
+                padding: 8px !important;
+                margin: 0 !important;
+                border-radius: 50% !important;
+                width: 42px !important;
+                height: 42px !important;
+                display: flex !important;
+                align-items: center !important;
+                justify-content: center !important;
+                font-size: 1.2rem !important;
+                position: relative !important;
+            }
+            
+            .nav-link i {
+                margin: 0 !important;
+            }
+            
+            .nav-link span {
+                display: none !important;
+            }
+            
+            .navbar .profile-img {
+                width: 32px !important;
+                height: 32px !important;
+                border-width: 2px !important;
+            }
+            
+            /* Adjust chat badge for mobile */
+            #chat-unread-badge {
+                top: 0.2rem !important;
+                left: 1.4rem !important;
+                font-size: 0.6rem !important;
+                width: 16px !important;
+                height: 16px !important;
+            }
+            
+            /* Active state for mobile */
+            .nav-link.active {
+                background: transparent !important;
+                color: #667eea !important;
+                transform: none !important;
+            }
+            
+            .nav-link.active i {
+                color: #667eea !important;
+            }
+            
+            /* Hover effect for mobile */
+            .nav-link:hover {
+                background: rgba(102, 126, 234, 0.1) !important;
+                transform: none !important;
+            }
+            
+            /* Mobile Footer - Minimal Design */
+            footer {
+                padding: 1.5rem 0 !important;
+                margin-top: 1.5rem !important;
+            }
+            
+            footer .container {
+                padding: 0 1rem;
+            }
+            
+            footer h5 {
+                font-size: 1.2rem !important;
+                margin-bottom: 0.5rem !important;
+            }
+            
+            footer p.mb-4 {
+                display: none !important;
+            }
+            
+            footer .row.text-center.mb-4 {
+                display: none !important;
+            }
+            
+            footer .mb-4:has(.btn) {
+                display: none !important;
+            }
+            
+            footer .social-links {
+                margin-bottom: 1rem !important;
+                justify-content: center !important;
+                gap: 1rem !important;
+            }
+            
+            footer .social-link {
+                width: 35px !important;
+                height: 35px !important;
+                font-size: 0.9rem !important;
+            }
+            
+            footer hr {
+                margin: 1rem 0 0.5rem 0 !important;
+            }
+            
+            footer .mb-0 small {
+                font-size: 0.75rem !important;
+                line-height: 1.3 !important;
+            }
         }
     </style>
 </head>
@@ -132,24 +320,32 @@
             <div class="collapse navbar-collapse" id="navbarNav">
                 <ul class="navbar-nav ms-auto">
                     <li class="nav-item">
-                        <a class="nav-link active" href="{% url 'home' %}">
-                            <i class="fas fa-compass me-1"></i>Explore
+                        <a class="nav-link {% if request.resolver_match.url_name == 'home' %}active{% endif %}" href="{% url 'home' %}">
+                            <i class="fas fa-compass me-1"></i><span>Explore</span>
                         </a>
                     </li>
                     {% if user.is_authenticated %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'create_post' %}">
-                                <i class="fas fa-plus-circle me-1"></i>Create
+                            <a class="nav-link {% if request.resolver_match.url_name == 'create_post' %}active{% endif %}" href="{% url 'create_post' %}">
+                                <i class="fas fa-plus-circle me-1"></i><span>Create</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'profile' %}">
-                                <i class="fas fa-user me-1"></i>Profile
+                            <a class="nav-link position-relative {% if request.resolver_match.url_name == 'chat_list' %}active{% endif %}" href="{% url 'chat_list' %}">
+                                <i class="fas fa-comments me-1"></i><span>Chat</span>
+                                <span id="chat-unread-badge" class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 0.5rem; left: 2rem; font-size: 0.65rem; display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link {% if request.resolver_match.url_name == 'about' %}active{% endif %}" href="{% url 'about' %}">
+                                <i class="fas fa-info-circle me-1"></i><span>About</span>
                             </a>
                         </li>
                         <li class="nav-item">
                             <a class="nav-link" href="{% url 'logout' %}">
-                                <i class="fas fa-sign-out-alt me-1"></i>Logout
+                                <i class="fas fa-sign-out-alt me-1"></i><span>Logout</span>
                             </a>
                         </li>
                         <li class="nav-item ms-2">
@@ -163,13 +359,13 @@
                         </li>
                     {% else %}
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'signup' %}">
-                                <i class="fas fa-user-plus me-1"></i>Sign Up
+                            <a class="nav-link {% if request.resolver_match.url_name == 'signup' %}active{% endif %}" href="{% url 'signup' %}">
+                                <i class="fas fa-user-plus me-1"></i><span>Sign Up</span>
                             </a>
                         </li>
                         <li class="nav-item">
-                            <a class="nav-link" href="{% url 'login' %}">
-                                <i class="fas fa-sign-in-alt me-1"></i>Login
+                            <a class="nav-link {% if request.resolver_match.url_name == 'login' %}active{% endif %}" href="{% url 'login' %}">
+                                <i class="fas fa-sign-in-alt me-1"></i><span>Login</span>
                             </a>
                         </li>
                     {% endif %}
@@ -311,6 +507,9 @@
     <script src="{% static 'users/assets/js/pikaday.min.js' %}"></script>
     <script src="{% static 'users/assets/js/theme.js' %}"></script>
     <script src="{% static 'users/explore/js/bs-init.js' %}"></script>
+    {% if user.is_authenticated %}
+        <script src="{% static 'users/js/chat-notifications.js' %}"></script>
+    {% endif %}
     
     <script>
         // Smooth scroll for anchor links

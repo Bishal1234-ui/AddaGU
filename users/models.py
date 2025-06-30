@@ -2,6 +2,7 @@ from django.db import models
 # import AbstractUser to add extra features to the user 
 from django.contrib.auth.models import AbstractUser
 from django.utils import timezone
+from django.db.models import Q, Max, Count, Case, When, IntegerField
 from .encryption import encrypt_for_user, decrypt_for_user
 
 class CustomUser(AbstractUser):
@@ -14,6 +15,50 @@ class CustomUser(AbstractUser):
 
     def __str__(self):
         return self.username   # username is default
+    
+    def get_conversations(self):
+        """
+        Get all conversations for this user with unread message counts
+        """
+        from django.db.models import Q, Subquery, OuterRef
+        
+        # Get all users this user has chatted with
+        conversations = CustomUser.objects.filter(
+            Q(sent_messages__receiver=self) | Q(received_messages__sender=self)
+        ).exclude(
+            id=self.id
+        ).distinct()
+        
+        # Add unread message count for each conversation
+        result = []
+        for user in conversations:
+            # Get unread messages from this user to current user
+            unread_count = ChatMessage.objects.filter(
+                sender=user,
+                receiver=self,
+                is_read=False
+            ).count()
+            
+            # Get the latest message between these users
+            latest_message = ChatMessage.objects.filter(
+                Q(sender=self, receiver=user) | Q(sender=user, receiver=self)
+            ).order_by('-timestamp').first()
+            
+            result.append({
+                'user': user,
+                'unread_count': unread_count,
+                'latest_message': latest_message
+            })
+        
+        # Sort by latest message timestamp
+        result.sort(key=lambda x: x['latest_message'].timestamp if x['latest_message'] else timezone.now(), reverse=True)
+        return result
+    
+    def get_total_unread_count(self):
+        """
+        Get total unread message count for this user
+        """
+        return ChatMessage.objects.filter(receiver=self, is_read=False).count()
 
 
 class ChatMessage(models.Model):

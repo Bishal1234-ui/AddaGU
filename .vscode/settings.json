@@ -1,0 +1,41 @@
+{
+    "files.associations": {
+        "*.html": "django-html",
+        "**templates/**/*.html": "django-html"
+    },
+    "emmet.includeLanguages": {
+        "django-html": "html"
+    },
+    "beautify.language": {
+        "html": [
+            "htm",
+            "html",
+            "django-html"
+        ]
+    },
+    "[django-html]": {
+        "editor.quickSuggestions": {
+            "other": true,
+            "comments": false,
+            "strings": true
+        }
+    },
+    "html.format.templating": true,
+    "html.format.wrapLineLength": 0,
+    "html.format.unformatted": "wbr, script, style",
+    "html.format.contentUnformatted": "pre,code,textarea",
+    "html.format.preserveNewLines": true,
+    "html.format.maxPreserveNewLines": null,
+    "html.format.indentInnerHtml": false,
+    "html.format.wrapAttributes": "auto",
+    "html.format.endWithNewline": false,
+    "html.format.extraLiners": "head, body, /html",
+    "html.format.indentHandlebars": false,
+    "html.validate.scripts": false,
+    "html.validate.styles": false,
+    "css.validate": false,
+    "javascript.validate.enable": false,
+    "typescript.validate.enable": false,
+    "html.customData": [],
+    "html.suggest.html5": true
+}
