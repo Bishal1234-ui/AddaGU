@@ -1,236 +1,367 @@
 {% extends 'base.html' %}
 {% load static %}
+
 {% block title %}Chat with {{ receiver.username }}{% endblock %}
+
 {% block content %}
 <style>
     .chat-container {
         max-width: 800px;
         margin: 0 auto;
-        height: 80vh;
+        height: calc(100vh - 200px);
         display: flex;
         flex-direction: column;
-        border: 1px solid #e1e8ed;
-        border-radius: 12px;
         background: white;
+        border-radius: 8px;
         box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        overflow: hidden;
     }
-    
+
     .chat-header {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         color: white;
         padding: 20px;
-        border-radius: 12px 12px 0 0;
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+    }
+
+    .user-info {
         display: flex;
         align-items: center;
         gap: 15px;
     }
-    
-    .chat-header img {
-        width: 50px;
-        height: 50px;
+
+    .user-avatar {
+        width: 45px;
+        height: 45px;
         border-radius: 50%;
-        border: 3px solid rgba(255,255,255,0.3);
+        object-fit: cover;
+        border: 2px solid rgba(255,255,255,0.3);
     }
-    
-    .chat-header h2 {
+
+    .user-details h2 {
         margin: 0;
-        font-size: 1.3em;
+        font-size: 1.2rem;
         font-weight: 600;
     }
-    
+
+    .user-status {
+        font-size: 0.85rem;
+        opacity: 0.9;
+        margin: 0;
+    }
+
+    .encryption-status {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        font-size: 0.85rem;
+        background: rgba(255,255,255,0.1);
+        padding: 8px 12px;
+        border-radius: 20px;
+        border: 1px solid rgba(255,255,255,0.2);
+    }
+
+    .encryption-status.active {
+        background: rgba(46, 204, 113, 0.2);
+        border-color: #2ecc71;
+    }
+
+    .encryption-status.inactive {
+        background: rgba(231, 76, 60, 0.2);
+        border-color: #e74c3c;
+    }
+
     .chat-messages {
         flex: 1;
-        overflow-y: auto;
         padding: 20px;
+        overflow-y: auto;
         background: #f8f9fa;
         display: flex;
         flex-direction: column;
         gap: 15px;
     }
-    
+
     .message {
-        display: flex;
-        margin-bottom: 10px;
         max-width: 70%;
-        animation: fadeIn 0.3s ease-in;
+        display: flex;
+        flex-direction: column;
+        animation: messageSlide 0.3s ease-out;
     }
-    
+
     .message.sent {
         align-self: flex-end;
-        flex-direction: row-reverse;
+        align-items: flex-end;
     }
-    
+
     .message.received {
         align-self: flex-start;
+        align-items: flex-start;
     }
-    
+
     .message-content {
-        background: #007bff;
-        color: white;
-        padding: 12px 18px;
-        border-radius: 20px;
+        background: white;
+        padding: 12px 16px;
+        border-radius: 18px;
+        box-shadow: 0 1px 3px rgba(0,0,0,0.1);
         position: relative;
         word-wrap: break-word;
-        box-shadow: 0 2px 5px rgba(0,0,0,0.1);
     }
-    
+
+    .message.sent .message-content {
+        background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        color: white;
+    }
+
     .message.received .message-content {
-        background: #e9ecef;
+        background: white;
         color: #333;
     }
-    
+
+    .message-text {
+        margin: 0;
+        line-height: 1.4;
+        font-size: 0.95rem;
+    }
+
     .message-time {
-        font-size: 11px;
+        font-size: 0.75rem;
         opacity: 0.7;
-        margin-top: 5px;
-        text-align: center;
+        margin-top: 4px;
     }
-    
-    .message.sent .message-time {
-        text-align: right;
+
+    .typing-indicator {
+        display: none;
+        padding: 10px 20px;
+        font-style: italic;
+        color: #666;
+        font-size: 0.9rem;
     }
-    
-    .message.received .message-time {
-        text-align: left;
-    }
-    
+
     .chat-input-container {
         padding: 20px;
-        border-top: 1px solid #e1e8ed;
         background: white;
-        border-radius: 0 0 12px 12px;
+        border-top: 1px solid #eee;
     }
-    
+
     .chat-input-group {
         display: flex;
         gap: 10px;
-        align-items: end;
+        align-items: flex-end;
     }
-    
+
     .chat-input {
         flex: 1;
         border: 2px solid #e1e8ed;
-        border-radius: 25px;
-        padding: 12px 20px;
+        border-radius: 20px;
+        padding: 12px 18px;
+        font-size: 0.95rem;
         resize: none;
         outline: none;
-        font-size: 14px;
-        line-height: 1.4;
-        transition: border-color 0.3s ease;
+        max-height: 120px;
+        transition: border-color 0.2s;
     }
-    
+
     .chat-input:focus {
-        border-color: #007bff;
+        border-color: #667eea;
     }
-    
+
     .send-button {
         background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
         border: none;
-        border-radius: 50%;
-        width: 50px;
-        height: 50px;
         color: white;
+        width: 45px;
+        height: 45px;
+        border-radius: 50%;
         cursor: pointer;
         display: flex;
         align-items: center;
         justify-content: center;
-        transition: transform 0.2s ease;
+        transition: transform 0.2s;
     }
-    
+
     .send-button:hover {
         transform: scale(1.05);
     }
-    
-    .send-button:active {
-        transform: scale(0.95);
+
+    .send-button:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+        transform: none;
     }
-    
-    @keyframes fadeIn {
-        from { opacity: 0; transform: translateY(10px); }
-        to { opacity: 1; transform: translateY(0); }
+
+    @keyframes messageSlide {
+        from {
+            opacity: 0;
+            transform: translateY(10px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
     }
-    
-    .typing-indicator {
-        display: none;
-        padding: 10px;
-        font-style: italic;
+
+    .no-messages {
+        text-align: center;
         color: #666;
-        font-size: 14px;
-    }
-    
-    .online-status {
-        width: 12px;
-        height: 12px;
-        background: #28a745;
-        border-radius: 50%;
-        border: 2px solid white;
-        margin-left: -15px;
-        margin-top: 35px;
+        font-style: italic;
+        margin: 50px 0;
     }
 </style>
 
-<div class="container mt-4">
-    <div class="chat-container">
-        <!-- Chat Header -->
-        <div class="chat-header">
+<div class="chat-container">
+    <div class="chat-header">
+        <div class="user-info">
             {% if receiver.profile_picture %}
-                <img src="{{ receiver.profile_picture.url }}" alt="{{ receiver.username }}">
+                <img src="{{ receiver.profile_picture.url }}" alt="{{ receiver.username }}" class="user-avatar">
             {% else %}
-                <img src="https://via.placeholder.com/50/667eea/ffffff?text={{ receiver.username.0|upper }}" alt="{{ receiver.username }}">
-            {% endif %}
-            <div class="online-status"></div>
-            <div>
-                <h2>{{ receiver.username }}</h2>
-                <small style="opacity: 0.8;">{{ receiver.first_name }} {{ receiver.last_name }}</small>
-            </div>
-        </div>
-
-        <!-- Chat Messages -->
-        <div class="chat-messages" id="chat-log">
-            {% for msg in messages %}
-                <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
-                    <div class="message-content">
-                        {{ msg.message|safe }}
-                        <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
-                    </div>
+                <div class="user-avatar" style="background: #ccc; display: flex; align-items: center; justify-content: center; font-weight: bold;">
+                    {{ receiver.username|first|upper }}
                 </div>
-            {% endfor %}
-        </div>
-
-        <!-- Typing Indicator -->
-        <div class="typing-indicator" id="typing-indicator">
-            {{ receiver.username }} is typing...
-        </div>
-
-        <!-- Chat Input -->
-        <div class="chat-input-container">
-            <div class="chat-input-group">
-                <textarea id="chat-message-input" class="chat-input" placeholder="Type a message..." rows="1"></textarea>
-                <button id="chat-message-send" class="send-button" title="Send message">
-                    <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
-                        <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
-                    </svg>
-                </button>
+            {% endif %}
+            <div class="user-details">
+                <h2>{{ receiver.username }}</h2>
+                <p class="user-status">Online</p>
             </div>
+        </div>
+        <div class="encryption-status" id="encryption-status">
+            <i class="fas fa-lock"></i> End-to-end encrypted
+        </div>
+    </div>
+
+    <!-- Chat Messages -->
+    <div class="chat-messages" id="chat-log">
+        {% for msg in messages %}
+            <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}" 
+                 data-encrypted="{% if msg.is_encrypted %}true{% else %}false{% endif %}" 
+                 data-sender="{{ msg.sender.username }}"
+                 data-receiver="{{ msg.receiver.username }}"
+                 data-message-for-sender="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_sender }}{% endif %}"
+                 data-message-for-receiver="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_receiver }}{% endif %}"
+                 data-message="{% if not msg.is_encrypted %}{{ msg.message }}{% endif %}">
+                <div class="message-content">
+                    <div class="message-text">
+                        {% if msg.is_encrypted %}
+                            <em>🔄 Decrypting...</em>
+                        {% else %}
+                            {{ msg.message }}
+                        {% endif %}
+                    </div>
+                    <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
+                </div>
+            </div>
+        {% empty %}
+            <div class="no-messages">No messages yet. Start the conversation!</div>
+        {% endfor %}
+    </div>
+
+    <!-- Typing Indicator -->
+    <div class="typing-indicator" id="typing-indicator">
+        {{ receiver.username }} is typing...
+    </div>
+
+    <!-- Chat Input -->
+    <div class="chat-input-container">
+        <div class="chat-input-group">
+            <textarea id="chat-message-input" class="chat-input" placeholder="Type a message..." rows="1"></textarea>
+            <button id="chat-message-send" class="send-button" title="Send message">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor">
+                    <path d="M2,21L23,12L2,3V10L17,12L2,14V21Z" />
+                </svg>
+            </button>
         </div>
     </div>
 </div>
+
+<!-- Include encryption library -->
+<script src="{% static 'users/js/chat-encryption.js' %}"></script>
 
 <script>
     const roomName = "{{ room_name }}";
     const currentUser = "{{ request.user.username }}";
     const receiverUser = "{{ receiver.username }}";
-    const chatLog = document.querySelector('#chat-log');
-    
+    let encryptionReady = false;
+
     // Auto-resize textarea
-    const textarea = document.querySelector('#chat-message-input');
-    textarea.addEventListener('input', function() {
+    const messageInput = document.getElementById('chat-message-input');
+    messageInput.addEventListener('input', function() {
         this.style.height = 'auto';
-        this.style.height = Math.min(this.scrollHeight, 120) + 'px';
+        this.style.height = this.scrollHeight + 'px';
     });
 
+    // Send message on Enter (Shift+Enter for new line)
+    messageInput.addEventListener('keydown', function(e) {
+        if (e.key === 'Enter' && !e.shiftKey) {
+            e.preventDefault();
+            sendMessage();
+        }
+    });
+
+    // Send button click
+    document.getElementById('chat-message-send').onclick = sendMessage;
+
+    // Scroll to bottom function
+    function scrollToBottom() {
+        const chatLog = document.getElementById('chat-log');
+        chatLog.scrollTop = chatLog.scrollHeight;
+    }
+
+    // Initialize encryption when page loads
+    async function initializeEncryption() {
+        try {
+            const success = await initializeChatEncryption(currentUser, receiverUser);
+            if (success) {
+                encryptionReady = true;
+                
+                // Decrypt existing messages
+                await decryptExistingMessages();
+                
+                console.log('Encryption ready');
+            } else {
+                console.warn('Encryption initialization failed');
+                encryptionReady = false;
+            }
+        } catch (error) {
+            console.error('Failed to initialize encryption:', error);
+            document.getElementById('encryption-status').innerHTML = 
+                '<span style="color: #dc3545;">❌ Encryption Failed</span>';
+        }
+    }
+
+    // Decrypt existing messages on page load
+    async function decryptExistingMessages() {
+        const messages = document.querySelectorAll('.message[data-encrypted="true"]');
+        for (const messageDiv of messages) {
+            const messageTextElement = messageDiv.querySelector('.message-text');
+            const sender = messageDiv.getAttribute('data-sender');
+            const receiver = messageDiv.getAttribute('data-receiver');
+            const messageForSender = messageDiv.getAttribute('data-message-for-sender');
+            const messageForReceiver = messageDiv.getAttribute('data-message-for-receiver');
+            
+            if (encryptionReady) {
+                try {
+                    const messageData = {
+                        sender: sender,
+                        receiver: receiver,
+                        encrypted_message_for_sender: messageForSender,
+                        encrypted_message_for_receiver: messageForReceiver
+                    };
+                    
+                    const decryptedText = await displayDecryptedMessage(messageData, currentUser);
+                    messageTextElement.textContent = decryptedText;
+                } catch (error) {
+                    console.error('Failed to decrypt message:', error);
+                    messageTextElement.innerHTML = '<em style="color: #dc3545;">❌ Failed to decrypt</em>';
+                }
+            }
+        }
+    }
+
+    // Use wss:// for HTTPS and ws:// for HTTP
+    const protocol = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
     const chatSocket = new WebSocket(
-        'ws://' + window.location.host + '/ws/chat/' + roomName + '/'
+        protocol + '//' + window.location.host + '/ws/chat/' + roomName + '/'
     );
 
     chatSocket.onopen = function(e) {
@@ -238,66 +369,111 @@
         scrollToBottom();
     };
 
-    chatSocket.onmessage = function(e) {
+    chatSocket.onmessage = async function(e) {
         const data = JSON.parse(e.data);
-        const message = data.message;
         const sender = data.sender;
         const timestamp = new Date(data.timestamp);
+        const isEncrypted = data.is_encrypted;
+        const isSentByMe = sender === currentUser;
         
-        const messageDiv = document.createElement('div');
-        messageDiv.className = `message ${sender === currentUser ? 'sent' : 'received'}`;
+        // Skip messages sent by current user (we already displayed them)
+        if (isSentByMe) {
+            return;
+        }
         
-        messageDiv.innerHTML = `
-            <div class="message-content">
-                ${message}
-                <div class="message-time">${timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
-            </div>
-        `;
+        let messageText = '';
         
-        chatLog.appendChild(messageDiv);
-        scrollToBottom();
+        // Handle message display for received messages only
+        if (isEncrypted && encryptionReady) {
+            try {
+                const messageData = {
+                    sender: data.sender,
+                    receiver: data.receiver,
+                    encrypted_message_for_sender: data.encrypted_message_for_sender,
+                    encrypted_message_for_receiver: data.encrypted_message_for_receiver
+                };
+                messageText = await displayDecryptedMessage(messageData, currentUser);
+            } catch (error) {
+                console.error('Failed to decrypt incoming message:', error);
+                messageText = '❌ Failed to decrypt message';
+            }
+        } else {
+            messageText = data.message || '❌ No message content';
+        }
+        
+        displayMessage(messageText, sender, timestamp, isEncrypted);
     };
 
     chatSocket.onclose = function(e) {
         console.log('Chat socket disconnected');
     };
 
-    function sendMessage() {
-        const messageInput = document.querySelector('#chat-message-input');
+    async function sendMessage() {
         const message = messageInput.value.trim();
         
         if (message !== '') {
-            chatSocket.send(JSON.stringify({
-                'message': message,
+            // Immediately show the message to the sender
+            displayMessage(message, currentUser, new Date(), false);
+            
+            let messageData = {
                 'sender': currentUser,
-                'receiver': receiverUser
-            }));
+                'receiver': receiverUser,
+                'is_encrypted': encryptionReady
+            };
+            
+            if (encryptionReady) {
+                try {
+                    const success = await sendEncryptedMessage(message, currentUser, receiverUser, chatSocket);
+                    if (!success) {
+                        console.error('Failed to send encrypted message');
+                        // Fall back to plain text
+                        messageData.message = message;
+                        messageData.is_encrypted = false;
+                        chatSocket.send(JSON.stringify(messageData));
+                    }
+                } catch (error) {
+                    console.error('Failed to encrypt message:', error);
+                    // Fall back to plain text
+                    messageData.message = message;
+                    messageData.is_encrypted = false;
+                    chatSocket.send(JSON.stringify(messageData));
+                }
+            } else {
+                messageData.message = message;
+                messageData.is_encrypted = false;
+                chatSocket.send(JSON.stringify(messageData));
+            }
+            
             messageInput.value = '';
             messageInput.style.height = 'auto';
         }
     }
 
-    function scrollToBottom() {
-        chatLog.scrollTop = chatLog.scrollHeight;
+    function displayMessage(message, sender, timestamp, isEncrypted) {
+        const chatLog = document.getElementById('chat-log');
+        const messageClass = sender === currentUser ? 'sent' : 'received';
+        
+        const messageDiv = document.createElement('div');
+        messageDiv.className = `message ${messageClass}`;
+        
+        const encryptionIcon = isEncrypted ? '🔒' : '';
+        const timeString = timestamp.toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'});
+        
+        messageDiv.innerHTML = `
+            <div class="message-content">
+                <div class="message-text">${message} ${encryptionIcon}</div>
+                <div class="message-time">${timeString}</div>
+            </div>
+        `;
+        
+        chatLog.appendChild(messageDiv);
+        scrollToBottom();
     }
 
-    // Send message on button click
-    document.querySelector('#chat-message-send').onclick = sendMessage;
-
-    // Send message on Enter key (Shift+Enter for new line)
-    document.querySelector('#chat-message-input').addEventListener('keypress', function(e) {
-        if (e.key === 'Enter' && !e.shiftKey) {
-            e.preventDefault();
-            sendMessage();
-        }
+    // Initialize everything when page loads
+    document.addEventListener('DOMContentLoaded', function() {
+        initializeEncryption();
+        scrollToBottom();
     });
-
-    // Initial scroll to bottom
-    window.addEventListener('load', function() {
-        setTimeout(scrollToBottom, 100);
-    });
-
-    // Focus on input when page loads
-    document.querySelector('#chat-message-input').focus();
 </script>
 {% endblock %}
