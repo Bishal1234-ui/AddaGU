@@ -79,6 +79,44 @@ class CustomUser(AbstractUser):
         """
         return ChatMessage.objects.filter(receiver=self, is_read=False).count()
 
+    def get_unread_notifications_count(self):
+        """
+        Get total unread notification count for this user
+        """
+        return Notification.objects.filter(recipient=self, is_read=False).count()
+
+
+class Notification(models.Model):
+    NOTIFICATION_TYPES = (
+        ('follow', 'Follow'),
+        ('like', 'Like'),
+        ('comment', 'Comment'),
+        ('message', 'Message'),
+    )
+    
+    recipient = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='notifications')
+    sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_notifications')
+    notification_type = models.CharField(max_length=20, choices=NOTIFICATION_TYPES)
+    message = models.TextField()
+    is_read = models.BooleanField(default=False)
+    created_at = models.DateTimeField(default=timezone.now)
+    
+    # Optional: Reference to related objects
+    blog_post = models.ForeignKey('blogs.BlogPost', on_delete=models.CASCADE, blank=True, null=True)
+    
+    class Meta:
+        ordering = ['-created_at']
+        
+    def __str__(self):
+        return f'{self.sender.username} {self.notification_type} - {self.recipient.username}'
+    
+    def get_time_since(self):
+        """
+        Get a human-readable time since the notification was created
+        """
+        from django.utils.timesince import timesince
+        return timesince(self.created_at)
+
 
 class ChatMessage(models.Model):
     sender = models.ForeignKey(CustomUser, on_delete=models.CASCADE, related_name='sent_messages')

@@ -16,5 +16,9 @@ urlpatterns = [
     path('chat/', views.chat_list_view, name='chat_list'),
     path('chat/<str:username>/', views.chat_view, name='chat'),
     path('api/unread-count/', views.get_unread_count, name='get_unread_count'),
+    path('notifications/', views.notifications_view, name='notifications'),
+    path('api/notification-count/', views.get_notification_count, name='get_notification_count'),
+    path('api/mark-notification-read/<int:notification_id>/', views.mark_notification_read, name='mark_notification_read'),
+    path('api/mark-all-notifications-read/', views.mark_all_notifications_read, name='mark_all_notifications_read'),
     # path('logout/', auth_views.LogoutView.as_view(), name='logout'),
 ]

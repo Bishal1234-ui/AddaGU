@@ -12,7 +12,8 @@ AddaGU enables university students to connect, share content, and communicate th
 
 - **🔐 Secure Messaging**: End-to-end encrypted chat with Fernet (AES-128 + HMAC-SHA256)
 - **📱 Real-time Updates**: Live notifications for posts, comments, and messages via WebSockets
-- **👤 User Management**: Custom authentication with profile management
+- **� Smart Notifications**: Instagram-style notification system for follows, likes, comments, and messages
+- **�👤 User Management**: Custom authentication with profile management
 - **📝 Social Features**: Create, share, and interact with posts, comments, and likes
 - **🎨 Modern UI**: Responsive design built with Bootstrap 5
 
@@ -44,6 +45,14 @@ AddaGU enables university students to connect, share content, and communicate th
 - **Key Derivation**: PBKDF2 with SHA256, 100,000 iterations
 - **Access Control**: Message-level encryption ensuring only sender/receiver access
 - **Data Protection**: All chat messages encrypted at rest
+
+## 🔔 Notification System
+
+- **Real-time Notifications**: Instant updates for user activities
+- **Activity Types**: Follow, Like, Comment, and Message notifications
+- **Instagram-style UI**: Modern notification interface with unread indicators
+- **Smart Badges**: Dynamic notification counts in navigation bar
+- **Auto-refresh**: Periodic updates every 30 seconds for real-time experience
 
 ## 🚀 Quick Start
 

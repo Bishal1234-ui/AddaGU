@@ -2,7 +2,7 @@ from django.shortcuts import render, redirect, get_list_or_404, get_object_or_40
 from django.contrib.auth import login, authenticate
 from django.contrib.auth.forms import AuthenticationForm
 from .forms import CustomUserCreationForm, CustomUserChangeForm
-from .models import CustomUser, ChatMessage
+from .models import CustomUser, ChatMessage, Notification
 # we need blog post to get the blog of a specific user
 from blogs.models import BlogPost
 from django.contrib.auth.decorators import login_required
@@ -45,6 +45,20 @@ def about_view(request):
     About Us page view - shows information about আড্ডা GU
     """
     return render(request, 'users/about.html')
+
+
+def create_notification(sender, recipient, notification_type, message, blog_post=None):
+    """
+    Helper function to create notifications
+    """
+    if sender != recipient:  # Don't create notifications for self-actions
+        Notification.objects.create(
+            sender=sender,
+            recipient=recipient,
+            notification_type=notification_type,
+            message=message,
+            blog_post=blog_post
+        )
 
 
 # create the profile vieew
@@ -92,10 +106,19 @@ def user_profile_view(request, username):
 @login_required
 def follow_unfollow_view(request, username):
     user_to_follow = get_object_or_404(CustomUser,username=username)
+    
     if request.user.following.filter(username=username).exists():
         request.user.following.remove(user_to_follow)
+        # Optionally, remove follow notification (or keep for history)
     else:
         request.user.following.add(user_to_follow)
+        # Create follow notification
+        create_notification(
+            sender=request.user,
+            recipient=user_to_follow,
+            notification_type='follow',
+            message=f'{request.user.username} started following you'
+        )
 
     return redirect('user_profile',username=username)
 
@@ -176,4 +199,53 @@ def get_unread_count(request):
     
     unread_count = request.user.get_total_unread_count()
     return JsonResponse({'unread_count': unread_count})
+
+
+@login_required
+def notifications_view(request):
+    """
+    Show all notifications for the current user
+    """
+    notifications = Notification.objects.filter(recipient=request.user).order_by('-created_at')
+    
+    # Mark all notifications as read when user visits the page
+    notifications.update(is_read=True)
+    
+    context = {
+        'notifications': notifications,
+    }
+    return render(request, 'users/notifications.html', context)
+
+
+@login_required
+def get_notification_count(request):
+    """
+    AJAX endpoint to get unread notification count
+    """
+    unread_count = request.user.get_unread_notifications_count()
+    return JsonResponse({'notification_count': unread_count})
+
+
+@login_required
+def mark_notification_read(request, notification_id):
+    """
+    Mark a specific notification as read
+    """
+    if request.method == 'POST':
+        notification = get_object_or_404(Notification, id=notification_id, recipient=request.user)
+        notification.is_read = True
+        notification.save()
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
+
+
+@login_required
+def mark_all_notifications_read(request):
+    """
+    Mark all notifications as read for the current user
+    """
+    if request.method == 'POST':
+        Notification.objects.filter(recipient=request.user, is_read=False).update(is_read=True)
+        return JsonResponse({'success': True})
+    return JsonResponse({'success': False})
 

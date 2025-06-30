@@ -205,7 +205,7 @@ class ChatConsumer(AsyncWebsocketConsumer):
     @database_sync_to_async
     def save_message(self, sender_username, receiver_username, message, timestamp):
         from django.contrib.auth import get_user_model
-        from users.models import ChatMessage
+        from users.models import ChatMessage, Notification
         
         User = get_user_model()
         sender = User.objects.get(username=sender_username)
@@ -220,11 +220,20 @@ class ChatConsumer(AsyncWebsocketConsumer):
             is_encrypted=False
         )
         chat_message.save()
+        
+        # Create notification for message
+        if sender != receiver:
+            Notification.objects.create(
+                sender=sender,
+                recipient=receiver,
+                notification_type='message',
+                message=f'{sender.username} sent you a message'
+            )
 
     @database_sync_to_async
     def save_encrypted_message(self, sender_username, receiver_username, encrypted_for_sender, encrypted_for_receiver, timestamp):
         from django.contrib.auth import get_user_model
-        from users.models import ChatMessage
+        from users.models import ChatMessage, Notification
         
         User = get_user_model()
         sender = User.objects.get(username=sender_username)
@@ -240,6 +249,15 @@ class ChatConsumer(AsyncWebsocketConsumer):
             is_encrypted=True
         )
         chat_message.save()
+        
+        # Create notification for encrypted message
+        if sender != receiver:
+            Notification.objects.create(
+                sender=sender,
+                recipient=receiver,
+                notification_type='message',
+                message=f'{sender.username} sent you a message'
+            )
 
     @database_sync_to_async
     def check_chat_permission(self, sender_username, receiver_username):

@@ -242,6 +242,15 @@
                 height: 16px !important;
             }
             
+            /* Adjust notification badge for mobile */
+            #notification-unread-badge {
+                top: 0.2rem !important;
+                left: 1.4rem !important;
+                font-size: 0.6rem !important;
+                width: 16px !important;
+                height: 16px !important;
+            }
+            
             /* Active state for mobile */
             .nav-link.active {
                 background: transparent !important;
@@ -334,6 +343,14 @@
                             <a class="nav-link position-relative {% if request.resolver_match.url_name == 'chat_list' %}active{% endif %}" href="{% url 'chat_list' %}">
                                 <i class="fas fa-comments me-1"></i><span>Chat</span>
                                 <span id="chat-unread-badge" class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 0.5rem; left: 2rem; font-size: 0.65rem; display: none;">
+                                    0
+                                </span>
+                            </a>
+                        </li>
+                        <li class="nav-item">
+                            <a class="nav-link position-relative {% if request.resolver_match.url_name == 'notifications' %}active{% endif %}" href="{% url 'notifications' %}">
+                                <i class="fas fa-bell me-1"></i><span>Notifications</span>
+                                <span id="notification-unread-badge" class="position-absolute translate-middle badge rounded-pill bg-danger" style="top: 0.5rem; left: 2.2rem; font-size: 0.65rem; display: none;">
                                     0
                                 </span>
                             </a>

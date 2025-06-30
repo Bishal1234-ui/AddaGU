@@ -12,6 +12,20 @@ from channels.layers import get_channel_layer
 
 User = get_user_model()
 
+def create_notification(sender, recipient, notification_type, message, blog_post=None):
+    """
+    Helper function to create notifications
+    """
+    if sender != recipient:  # Don't create notifications for self-actions
+        from users.models import Notification
+        Notification.objects.create(
+            sender=sender,
+            recipient=recipient,
+            notification_type=notification_type,
+            message=message,
+            blog_post=blog_post
+        )
+
 # @login_required
 def home_view(request):
     posts = BlogPost.objects.all().order_by('-created_at')
@@ -50,6 +64,15 @@ def toggle_like(request, pk):
     else:
         # or else make Liked = true ( like will alread be crated in above line )
         liked = True
+        
+        # Create notification for like
+        create_notification(
+            sender=user,
+            recipient=blog_post.author,
+            notification_type='like',
+            message=f'{user.username} liked your post "{blog_post.title}"',
+            blog_post=blog_post
+        )
 
     # Send the updated like count to the WebSocket
     channel_layer = get_channel_layer()
@@ -77,6 +100,15 @@ def blog_detail_view(request, pk):
         # if the comment is submmitedd we create the Comment object and upload to dtabase
         if comment_text:
             comment = Comment.objects.create(blog_post=blog_post, author=request.user, text=comment_text )
+
+            # Create notification for comment
+            create_notification(
+                sender=request.user,
+                recipient=blog_post.author,
+                notification_type='comment',
+                message=f'{request.user.username} commented on your post "{blog_post.title}"',
+                blog_post=blog_post
+            )
 
             # <<<send the new comment to the websocet>>>
             channel_layer = get_channel_layer()
