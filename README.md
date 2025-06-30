@@ -16,6 +16,18 @@ AddaGU enables university students to connect, share content, and communicate th
 - **📝 Social Features**: Create, share, and interact with posts, comments, and likes
 - **🎨 Modern UI**: Responsive design built with Bootstrap 5
 
+## 💻 Screennshots
+<p align="center">
+  <img src="https://github.com/user-attachments/assets/fb6af928-eff4-41d4-bf85-b11cdf237fe5" width="300"/>
+  <img src="https://github.com/user-attachments/assets/b6b7e405-4bff-4fdb-98a3-fe8803b2b351" width="300"/>
+  <br>
+  <img src="https://github.com/user-attachments/assets/94909266-a1a0-4bae-98c1-b0c786737862" width="300"/>
+  <img src="https://github.com/user-attachments/assets/f7a8c2e1-a6cd-483a-93d2-e8342bcede30" width="300"/>
+</p>
+
+
+
+
 ## 🛠️ Technology Stack
 
 | Component | Technology |
