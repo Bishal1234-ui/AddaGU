@@ -140,21 +140,25 @@ class ChatMessage(models.Model):
     def set_message(self, plain_message):
         """
         Encrypt and store the message.
-        The message is encrypted with both sender's and receiver's keys.
+        The message is encrypted with the sender's key for consistent decryption.
         """
-        # Store the encrypted message
+        # Store the encrypted message using sender's key
         self.message = encrypt_for_user(plain_message, self.sender.id)
+        self.is_encrypted = True
     
     def get_message_for_user(self, user):
         """
         Decrypt and return the message for a specific user.
         Both sender and receiver should be able to read the message.
         """
+        if not self.is_encrypted:
+            return self.message or "[No message content]"
+            
         if user.id == self.sender.id or user.id == self.receiver.id:
             # Since we encrypt with sender's key, always use sender's key to decrypt
             try:
                 return decrypt_for_user(self.message, self.sender.id)
-            except:
+            except Exception as e:
                 return "[Message could not be decrypted]"
         else:
             return "[Access denied]"
@@ -164,4 +168,21 @@ class ChatMessage(models.Model):
         Get the decrypted message using sender's key.
         This is used for displaying messages in the chat.
         """
-        return decrypt_for_user(self.message, self.sender.id)
+        if not self.is_encrypted:
+            return self.message or "[No message content]"
+        try:
+            return decrypt_for_user(self.message, self.sender.id)
+        except Exception as e:
+            return "[Message could not be decrypted]"
+    
+    def get_display_message(self):
+        """
+        Get the message content for display in templates.
+        Returns the decrypted message if encrypted, or plain message if not.
+        """
+        if not self.is_encrypted:
+            return self.message or "[No message content]"
+        try:
+            return decrypt_for_user(self.message, self.sender.id)
+        except Exception as e:
+            return "[Message could not be decrypted]"

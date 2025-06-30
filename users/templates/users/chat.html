@@ -234,19 +234,12 @@
     <!-- Chat Messages -->
     <div class="chat-messages" id="chat-log">
         {% for msg in messages %}
-            <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}" 
-                 data-encrypted="{% if msg.is_encrypted %}true{% else %}false{% endif %}" 
-                 data-sender="{{ msg.sender.username }}"
-                 data-receiver="{{ msg.receiver.username }}"
-                 data-message-for-sender="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_sender }}{% endif %}"
-                 data-message-for-receiver="{% if msg.is_encrypted %}{{ msg.encrypted_message_for_receiver }}{% endif %}"
-                 data-message="{% if not msg.is_encrypted %}{{ msg.message }}{% endif %}">
+            <div class="message {% if msg.sender == request.user %}sent{% else %}received{% endif %}">
                 <div class="message-content">
                     <div class="message-text">
+                        {{ msg.get_display_message }}
                         {% if msg.is_encrypted %}
-                            <em>🔄 Decrypting...</em>
-                        {% else %}
-                            {{ msg.message }}
+                            <i class="fas fa-lock" style="margin-left: 5px; color: #28a745; font-size: 12px;" title="Encrypted message"></i>
                         {% endif %}
                     </div>
                     <div class="message-time">{% timezone "Asia/Kolkata" %}{{ msg.timestamp|date:"g:i A" }}{% endtimezone %}</div>
