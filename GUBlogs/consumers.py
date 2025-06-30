@@ -130,6 +130,16 @@ class ChatConsumer(AsyncWebsocketConsumer):
         receiver_username = data['receiver']
         is_encrypted = data.get('is_encrypted', False)
         
+        # Check if users can chat with each other
+        can_chat = await self.check_chat_permission(sender_username, receiver_username)
+        if not can_chat:
+            # Send error message back to sender
+            await self.send(text_data=json.dumps({
+                'error': 'Both users must follow each other to chat',
+                'type': 'permission_error'
+            }))
+            return
+        
         # Get current timestamp in IST
         current_time = timezone.now()
         
@@ -230,4 +240,19 @@ class ChatConsumer(AsyncWebsocketConsumer):
             is_encrypted=True
         )
         chat_message.save()
+
+    @database_sync_to_async
+    def check_chat_permission(self, sender_username, receiver_username):
+        """
+        Check if two users can chat with each other (both must follow each other)
+        """
+        from django.contrib.auth import get_user_model
+        
+        User = get_user_model()
+        try:
+            sender = User.objects.get(username=sender_username)
+            receiver = User.objects.get(username=receiver_username)
+            return sender.can_chat_with(receiver)
+        except User.DoesNotExist:
+            return False
 

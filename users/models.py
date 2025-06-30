@@ -16,9 +16,24 @@ class CustomUser(AbstractUser):
     def __str__(self):
         return self.username   # username is default
     
+    def can_chat_with(self, other_user):
+        """
+        Check if current user can chat with another user.
+        Returns True if both users follow each other.
+        """
+        if self == other_user:
+            return False
+        
+        # Check if both users follow each other
+        i_follow_them = self.following.filter(id=other_user.id).exists()
+        they_follow_me = other_user.following.filter(id=self.id).exists()
+        
+        return i_follow_them and they_follow_me
+    
     def get_conversations(self):
         """
         Get all conversations for this user with unread message counts
+        Only include users that can chat with each other (both follow each other)
         """
         from django.db.models import Q, Subquery, OuterRef
         
@@ -32,6 +47,10 @@ class CustomUser(AbstractUser):
         # Add unread message count for each conversation
         result = []
         for user in conversations:
+            # Only include conversations where users can chat with each other
+            if not self.can_chat_with(user):
+                continue
+                
             # Get unread messages from this user to current user
             unread_count = ChatMessage.objects.filter(
                 sender=user,

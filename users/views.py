@@ -79,10 +79,12 @@ def user_profile_view(request, username):
     user = get_object_or_404(CustomUser, username=username)
     user_posts = BlogPost.objects.filter(author=user)
     is_following = request.user.following.filter(username=username).exists()
+    can_chat = request.user.can_chat_with(user)
     context = {
         'user_profile':user,
         'user_posts':user_posts,
-        'is_following':is_following
+        'is_following':is_following,
+        'can_chat': can_chat
     }
     return render(request, 'users/user_profile.html', context)
 
@@ -124,6 +126,13 @@ def delete_post_view(request, pk):
 @login_required 
 def chat_view(request, username):
     receiver = get_object_or_404(CustomUser, username=username)
+    
+    # Check if both users follow each other
+    if not request.user.can_chat_with(receiver):
+        from django.contrib import messages
+        messages.error(request, "Both of you must follow each other to start chatting.")
+        return redirect('user_profile', username=receiver.username)
+    
     room_name = f"chat_{min(request.user.id, receiver.id)}_{max(request.user.id, receiver.id)}"
     
     # Get existing messages between these two users

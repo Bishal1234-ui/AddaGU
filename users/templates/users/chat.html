@@ -372,6 +372,15 @@
 
     chatSocket.onmessage = async function(e) {
         const data = JSON.parse(e.data);
+        
+        // Handle permission errors
+        if (data.type === 'permission_error') {
+            alert(data.error);
+            // Redirect to the user's profile page
+            window.location.href = `/profile/{{ receiver.username }}/`;
+            return;
+        }
+        
         const sender = data.sender;
         const serverTimestamp = new Date(data.timestamp);
         const isEncrypted = data.is_encrypted;

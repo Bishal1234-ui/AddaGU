@@ -123,6 +123,17 @@
         box-shadow: 0 4px 12px rgba(72, 187, 120, 0.4);
     }
     
+    .btn-secondary-modern {
+        background: #a0aec0;
+        color: white;
+    }
+    
+    .btn-secondary-modern:hover {
+        background: #718096;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px rgba(160, 174, 192, 0.4);
+    }
+    
     .posts-section {
         padding: 2rem;
     }
@@ -373,12 +384,21 @@
                                 {% endif %}
                             </button>
                         </form>
-                        <a href="{% url 'chat' user_profile.username %}" class="btn-modern btn-success-modern">
-                            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
-                                <path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z"/>
-                            </svg>
-                            Message
-                        </a>
+                        {% if can_chat %}
+                            <a href="{% url 'chat' user_profile.username %}" class="btn-modern btn-success-modern">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z"/>
+                                </svg>
+                                Message
+                            </a>
+                        {% else %}
+                            <button type="button" class="btn-modern btn-secondary-modern" onclick="showChatRestrictionModal()">
+                                <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor">
+                                    <path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2Z"/>
+                                </svg>
+                                Message
+                            </button>
+                        {% endif %}
                     </div>
                 {% endif %}
             </div>
@@ -433,6 +453,44 @@
         </div>
         <div id="modal-body">
             <div id="user-list"></div>
+        </div>
+    </div>
+</div>
+
+<!-- Chat Restriction Modal -->
+<div id="chat-restriction-modal" class="modal-overlay" style="display: none;">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h3 class="modal-title">
+                <svg width="20" height="20" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 8px; color: #e53e3e;">
+                    <path d="M12,2A10,10 0 0,0 2,12A10,10 0 0,0 12,22A10,10 0 0,0 22,12A10,10 0 0,0 12,2M12,17A1.5,1.5 0 0,1 10.5,15.5A1.5,1.5 0 0,1 12,14A1.5,1.5 0 0,1 13.5,15.5A1.5,1.5 0 0,1 12,17M12,10.5A1.5,1.5 0 0,1 10.5,9A1.5,1.5 0 0,1 12,7.5A1.5,1.5 0 0,1 13.5,9A1.5,1.5 0 0,1 12,10.5Z"/>
+                </svg>
+                Can't Send Message
+            </h3>
+            <button id="close-chat-modal" class="close-btn">&times;</button>
+        </div>
+        <div style="padding: 20px;">
+            <div style="text-align: center; margin-bottom: 20px;">
+                <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #fed7d7 0%, #feb2b2 100%); border-radius: 50%; display: flex; align-items: center; justify-content: center; margin: 0 auto 15px;">
+                    <svg width="24" height="24" viewBox="0 0 24 24" fill="#e53e3e">
+                        <path d="M20,2H4A2,2 0 0,0 2,4V22L6,18H20A2,2 0 0,0 22,16V4A2,2 0 0,0 20,2M8.5,12.5L7,11L8.5,9.5L10,11L8.5,12.5M16,11L14.5,9.5L16,8L17.5,9.5L16,11Z"/>
+                    </svg>
+                </div>
+                <p style="color: #2d3748; font-size: 16px; margin-bottom: 10px; font-weight: 500;">
+                    Both of you must follow each other to start chatting.
+                </p>
+                <p style="color: #718096; font-size: 14px; margin-bottom: 0;">
+                    Follow {{ user_profile.username }} and ask them to follow you back to enable messaging.
+                </p>
+            </div>
+            <div style="text-align: center;">
+                <button onclick="closeChatRestrictionModal()" class="btn-modern btn-primary-modern">
+                    <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" style="margin-right: 5px;">
+                        <path d="M19,6.41L17.59,5L12,10.59L6.41,5L5,6.41L10.59,12L5,17.59L6.41,19L12,13.41L17.59,19L19,17.59L13.41,12L19,6.41Z"/>
+                    </svg>
+                    Got it
+                </button>
+            </div>
         </div>
     </div>
 </div>
@@ -513,6 +571,40 @@ document.addEventListener('DOMContentLoaded', function() {
                 document.body.style.overflow = 'hidden';
             });
     }
+});
+
+// Chat restriction modal functions
+function showChatRestrictionModal() {
+    const modal = document.getElementById('chat-restriction-modal');
+    modal.style.display = 'block';
+    document.body.style.overflow = 'hidden';
+}
+
+function closeChatRestrictionModal() {
+    const modal = document.getElementById('chat-restriction-modal');
+    modal.style.display = 'none';
+    document.body.style.overflow = 'auto';
+}
+
+// Close chat restriction modal when clicking outside or on close button
+document.addEventListener('DOMContentLoaded', function() {
+    const modal = document.getElementById('chat-restriction-modal');
+    const closeBtn = document.getElementById('close-chat-modal');
+    
+    closeBtn.addEventListener('click', closeChatRestrictionModal);
+    
+    modal.addEventListener('click', function(e) {
+        if (e.target === modal) {
+            closeChatRestrictionModal();
+        }
+    });
+    
+    // Close modal with Escape key
+    document.addEventListener('keydown', function(e) {
+        if (e.key === 'Escape' && modal.style.display === 'block') {
+            closeChatRestrictionModal();
+        }
+    });
 });
 </script>
 
