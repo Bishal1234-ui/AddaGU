@@ -63,10 +63,22 @@ class CustomUser(AbstractUser):
                 Q(sender=self, receiver=user) | Q(sender=user, receiver=self)
             ).order_by('-timestamp').first()
             
+            # Get decrypted message preview for display
+            message_preview = ""
+            if latest_message:
+                try:
+                    message_preview = latest_message.get_display_message()
+                    # Handle empty or failed decryption
+                    if not message_preview or message_preview.startswith("["):
+                        message_preview = "Message content unavailable"
+                except Exception:
+                    message_preview = "Message content unavailable"
+            
             result.append({
                 'user': user,
                 'unread_count': unread_count,
-                'latest_message': latest_message
+                'latest_message': latest_message,
+                'message_preview': message_preview  # Add decrypted preview
             })
         
         # Sort by latest message timestamp

@@ -246,7 +246,7 @@
                                 {% if conversation.latest_message.sender == user %}
                                     <span class="message-status">You:</span>
                                 {% endif %}
-                                <p class="latest-message">{{ conversation.latest_message.message|truncatechars:60 }}</p>
+                                <p class="latest-message">{{ conversation.message_preview|truncatechars:60 }}</p>
                             {% else %}
                                 <p class="latest-message">Start a conversation...</p>
                             {% endif %}
